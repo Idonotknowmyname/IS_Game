@@ -4,10 +4,12 @@ from project.sprites.bot import Bot
 from project.sprites.projectile import Projectile
 from project.sprites.obstacle import Obstacle
 from project.game_engine.game import Game
+
+from project.ai.crude_controller import CrudeController
 from time import time
 
 def draw_sprite(display, sprite):
-    if type(sprite) == Bot:
+    if isinstance(sprite, Bot):
 
         position = sprite.get_position().copy()
         position[1] = display_height - position[1]
@@ -46,9 +48,30 @@ pg.font.init()
 # load image:
 # pygame.image.load('path')
 
+# Define display size (approx. same as arena size) and frames per second of game
 display_height = 800
 display_width = 800
+fps = 60
 
+# Number of agents per team
+n_agents = 1
+
+# Identify what agent in what team is controlled by keyboard
+controlled_agent = [1,0] #Team 1 (B), bot 0
+
+# Define bot controllers
+controllers = {
+    0 : Bot,
+    1 : CrudeController
+}
+# Define what controllers should be used for each bot
+# key is team name ('a', 'b'), value is array of controller id for each bot
+bot_settings = {
+    'a': [1],
+    'b': [0]
+}
+
+# Define colors
 black = (0,0,0)
 background_col = (200, 200, 200)
 obstacle_col = (150, 0, 150)
@@ -72,13 +95,10 @@ game_display = pg.display.set_mode((display_width,display_height))
 pg.display.set_caption('A test game')
 clock = pg.time.Clock()
 
-fps = 60
-
 crashed = False
 
 # Init game
-game = Game(n_agents=1, wind_size=[display_height, display_width])
-controlled_agent = [1,0] #Team 0 (A), bot 0
+game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings, controllers=controllers)
 
 last = time()
 

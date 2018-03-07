@@ -1,9 +1,13 @@
 import numpy as np
+
 from ..utils.utils import colliding
+
 from ..sprites.bot import Bot
 from ..sprites.dynamic import Dynamic
 from ..sprites.obstacle import Obstacle
 from ..sprites.collidable import Collidable
+
+from ..ai.crude_controller import CrudeController
 
 class Game:
 
@@ -28,12 +32,12 @@ class Game:
 
         # Create bots
         if type(n_agents) is int:
-            self.team_a = [self.create_bot('a',**kwargs) for _ in range(n_agents)]
-            self.team_b = [self.create_bot('b',**kwargs) for _ in range(n_agents)]
+            self.team_a = [self.create_bot('a', i, **kwargs) for i in range(n_agents)]
+            self.team_b = [self.create_bot('b', i, **kwargs) for i in range(n_agents)]
 
         elif type(n_agents) is list:
-            self.team_a = [self.create_bot('a',**kwargs) for _ in range(n_agents[0])]
-            self.team_b = [self.create_bot('b',**kwargs) for _ in range(n_agents[1])]
+            self.team_a = [self.create_bot('a', i, **kwargs) for i in range(n_agents[0])]
+            self.team_b = [self.create_bot('b', i, **kwargs) for i in range(n_agents[1])]
         else:
             assert False, 'Bad number of bot given!'
 
@@ -54,8 +58,16 @@ class Game:
         self.create_obstacle([int(width/2), int(height/2)], 150, 150, np.pi/4)
 
 
-    def create_bot(self, team, **kwargs):
-        new_bot = Bot(team, self, **kwargs)
+    def create_bot(self, team, index, **kwargs):
+        # If settings for the bots are defined
+        if 'bot_settings' in kwargs.keys():
+            settings = kwargs['bot_settings']
+            controllers = kwargs['controllers']
+
+            new_bot = controllers[settings[team][index]](team, self)
+        else:
+            new_bot = Bot(team, self)
+
         self.game_objects.append(new_bot)
         return new_bot
 
@@ -71,6 +83,9 @@ class Game:
             if isinstance(obj, Dynamic):
                 # Update position based on speed
                 obj.update(delta_t)
+            if isinstance(obj, Bot):
+                # Take action for every bot
+                obj.take_action()
 
     # Check is everything is good
     # NOTE: if a projectile hits 2 or more bots at the exact same game iter, they both lose life

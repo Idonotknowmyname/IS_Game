@@ -4,7 +4,7 @@ import numpy as np
 class CrudeController(Bot):
 
     def __init__(self, team, game, type=0, position=None, rotation=None):
-        super(CrudeController, self).__init__(self,team,game,type,position,rotation)
+        super(CrudeController, self).__init__(team,game,type,position,rotation)
 
     def take_action(self):
 
