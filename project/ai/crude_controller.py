@@ -19,6 +19,8 @@ class CrudeController(Bot):
         direction = np.arctan2(distance_vec[1],distance_vec[0])
         distance = np.linalg.norm(distance_vec)
 
+
+        #SHIT FUCK PYCHARM
         #Match rotation
         self.ang_speed = np.sign(direction-self.rotation-np.pi/2)
 
