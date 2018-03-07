@@ -6,6 +6,7 @@ from project.sprites.obstacle import Obstacle
 from project.game_engine.game import Game
 
 from project.ai.crude_controller import CrudeController
+from project.ai.test_controller import TestController
 from time import time
 
 def draw_sprite(display, sprite):
@@ -45,9 +46,6 @@ def draw_sprite(display, sprite):
 pg.init()
 pg.font.init()
 
-# load image:
-# pygame.image.load('path')
-
 # Define display size (approx. same as arena size) and frames per second of game
 display_height = 800
 display_width = 800
@@ -62,12 +60,13 @@ controlled_agent = [1,0] #Team 1 (B), bot 0
 # Define bot controllers
 controllers = {
     0 : Bot,
-    1 : CrudeController
+    1 : CrudeController,
+    2 : TestController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [1],
+    'a': [2],
     'b': [0]
 }
 
@@ -133,6 +132,9 @@ while not crashed:
                     agent.set_ang_speed(1)
                 elif event.key == 113:
                     agent.set_ang_speed(-1)
+                # Sprint
+                elif event.key == 304:
+                    agent.MAX_SPEED *= 3
 
         elif event.type == pg.KEYUP:
             if controlled_agent is not None:
@@ -157,6 +159,9 @@ while not crashed:
                     agent.set_ang_speed(0)
                 elif event.key == 113:
                     agent.set_ang_speed(0)
+                    # Sprint
+                elif event.key == 304:
+                    agent.MAX_SPEED /= 3
 
     # Update game
     game.time_step(1/fps)

@@ -11,7 +11,6 @@ def colliding(obj_1, obj_2):
 
     dist = np.sqrt(np.dot((obj_1.get_position() - obj_2.get_position()), (obj_1.get_position() - obj_2.get_position())))
 
-
     # Both circles
     if shape_1 == 0 and shape_2 == 0:
         if dist < (obj_1.RADIUS + obj_2.RADIUS):
@@ -19,7 +18,7 @@ def colliding(obj_1, obj_2):
         else:
             return False
     # If one is a rectangle and the other a circle
-    if (shape_1 == 0 and shape_2 == 1) or (shape_1 == 1 and shape_2 == 0):
+    elif (shape_1 == 0 and shape_2 == 1) or (shape_1 == 1 and shape_2 == 0):
         if shape_1 == 1:
             rect = obj_1
             circ = obj_2
@@ -57,7 +56,71 @@ def colliding(obj_1, obj_2):
 
             if dist_from_edge < circ.RADIUS:
                 return True
+    # If both are rectangles
+    else:
+        # Check for each edge if it can be used as a separating axis
+        # (source:https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles)
+        vertices_1 = obj_1.get_bbox()
+        vertices_2 = obj_2.get_bbox()
 
+        # Loop over vertices of Obj_1
+        for i in range(4):
+            vertex_1 = vertices_1[i-1]
+            vertex_2 = vertices_1[i]
+
+            normal = np.array([vertex_2[1] - vertex_1[1], vertex_1[0] - vertex_2[0]])
+
+            min_a = max_a = None
+
+            for other_vertex in vertices_1:
+                projection = np.dot(normal, other_vertex)
+                if min_a is None or projection < min_a:
+                    min_a = projection
+                if max_a is None or projection > max_a:
+                    max_a = projection
+
+            min_b = max_b = None
+
+            for other_vertex in vertices_2:
+                projection = np.dot(normal, other_vertex)
+                if min_b is None or projection < min_b:
+                    min_b = projection
+                if max_b is None or projection > max_b:
+                    max_b = projection
+
+
+            if max_a < min_b or max_b < min_a:
+                return False
+
+        # Loop over vertices of Obj_2
+        for i in range(4):
+            vertex_1 = vertices_2[i - 1]
+            vertex_2 = vertices_2[i]
+
+            normal = np.array([vertex_2[1] - vertex_1[1], vertex_1[0] - vertex_2[0]])
+
+            min_a = max_a = None
+
+            for other_vertex in vertices_1:
+                projection = np.dot(normal, other_vertex)
+                if min_a is None or projection < min_a:
+                    min_a = projection
+                if max_a is None or projection > max_a:
+                    max_a = projection
+
+            min_b = max_b = None
+
+            for other_vertex in vertices_2:
+                projection = np.dot(normal, other_vertex)
+                if min_b is None or projection < min_b:
+                    min_b = projection
+                if max_b is None or projection > max_b:
+                    max_b = projection
+
+            if max_a < min_b or max_b < min_a:
+                return False
+
+        return True
 
     return False
 
