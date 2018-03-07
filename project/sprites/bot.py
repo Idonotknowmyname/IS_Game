@@ -66,12 +66,12 @@ class Bot(Dynamic, Collidable):
         pass
 
     def handle_collision(self, collidable):
-        if type(collidable) == Bot:
+        if isinstance(collidable, Bot):
             return 1
-        elif type(collidable) == Projectile:
+        elif isinstance(collidable, Projectile):
             if collidable.team != self.team:
                 self.health -= collidable.damage
-        elif type(collidable) == Obstacle:
+        elif isinstance(collidable, Obstacle):
             return 1
         return 0
 

@@ -29,8 +29,8 @@ class Projectile(Dynamic, Collidable):
 
 
     def handle_collision(self, collidable):
-        if type(collidable) == Bot and collidable.team != self.team:
+        if isinstance(collidable, Bot) and collidable.team != self.team:
             return -1
-        elif type(collidable) == Obstacle:
+        elif isinstance(collidable, Obstacle):
             return -1
         return 0

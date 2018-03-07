@@ -37,5 +37,6 @@ class Dynamic(Sprite):
 
     def update(self, delta_t):
         self.rotation += self.ang_speed * self.MAX_ANG_SPEED * delta_t
+        self.rotation = (self.rotation % (np.pi * 2))
         displacement = np.asarray(self.speed * get_rot_mat(self.rotation) * self.MAX_SPEED * delta_t)
         self.position = displacement.flatten() + self.position
