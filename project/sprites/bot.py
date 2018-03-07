@@ -15,6 +15,8 @@ class Bot(Dynamic, Collidable):
 
     # Bot properties
     MAX_HEALTH = 100
+    # In seconds
+    RECHARGING_TIME = 0.3
 
     # Dynamic properties
     MAX_SPEED = 80.
@@ -46,14 +48,22 @@ class Bot(Dynamic, Collidable):
         else:
             self.rotation = 0.
 
-        self.type = type
+        self.last_shot_time = time()
 
     def shoot(self):
-        # Get cannon location and direction
-        bbox = self.get_bbox()
-        cannon_pos = (bbox[0] + bbox[-1]) / 2
 
-        self.game.add_projectile(Projectile(cannon_pos, self.rotation,self.team))
+        if time() - self.last_shot_time > self.RECHARGING_TIME:
+            # Get cannon location and direction
+            bbox = self.get_bbox()
+            cannon_pos = (bbox[0] + bbox[-1]) / 2
+
+            self.game.add_projectile(Projectile(cannon_pos, self.rotation, self.team))
+
+            self.last_shot_time = time()
+
+    # To overwrite when implementing AIs
+    def take_action(self):
+        pass
 
     def handle_collision(self, collidable):
         if type(collidable) == Bot:
