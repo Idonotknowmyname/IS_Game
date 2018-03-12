@@ -8,21 +8,24 @@ from time import time
 class Bot(Dynamic, Collidable):
 
     # Collidable properties
-    BOX_HEIGHT = 70
-    BOX_WIDTH = 70
-    RADIUS = 35
+    BOX_HEIGHT = 70 # Overwritten in init
+    BOX_WIDTH = 70 # Overwritten in init
+    RADIUS = 20
     SHAPE = 0
 
     # Bot properties
     MAX_HEALTH = 100
     # In seconds
-    RECHARGING_TIME = 0.3
+    RECHARGING_TIME = 1
 
     # Dynamic properties
     MAX_SPEED = 80.
     MAX_ANG_SPEED = 2.
 
     def __init__(self, team, game, type=0, position=None, rotation=None):
+
+        self.BOX_HEIGHT = 2*self.RADIUS
+        self.BOX_WIDTH = 2*self.RADIUS
 
         self.team = team
         self.game = game
@@ -69,7 +72,7 @@ class Bot(Dynamic, Collidable):
         if isinstance(collidable, Bot):
             return 1
         elif isinstance(collidable, Projectile):
-            if collidable.team != self.team:
+            if collidable.team != self.team and not collidable.assigned:
                 self.health -= collidable.damage
         elif isinstance(collidable, Obstacle):
             return 1

@@ -32,12 +32,23 @@ class TestController(Bot):
             self.ang_speed = -np.sign(diff_rotation)
 
         # Shoot only if sight is clear
-        # Create a very thin rectangular obstacle (line between bots) and check its collisions
 
+        if self.is_target_visible(target):
+            pass
+            # self.shoot()
+
+    def is_target_visible(self, target):
+        # Create a very thin rectangular obstacle (line between bots) and check its collisions
+        # Calculate distance and direction of target
+        distance_vec = target.position - self.position
+        distance = np.linalg.norm(distance_vec)
+        direction = np.arctan2(distance_vec[1], distance_vec[0])
+        direction = (-direction + np.pi / 2) % (np.pi * 2)
+
+        # Create the obstacle
         thickness = 2
         length = abs(distance - (self.RADIUS + target.RADIUS) - 5)
-
-        obs = Obstacle((target.position + self.position)/2, length, thickness, direction)
+        obs = Obstacle((target.position + self.position) / 2, length, thickness, direction)
 
         # If the target is visible
         visible = True
@@ -45,8 +56,6 @@ class TestController(Bot):
         for obj in self.game.game_objects:
             if isinstance(obj, Obstacle):
                 if colliding(obs, obj):
-                    visible = False
-                    break
+                    return False
 
-        if visible:
-            self.shoot()
+        return True

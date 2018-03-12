@@ -45,14 +45,16 @@ class Game:
         height = wind_size[0]
         width = wind_size[1]
 
+        wall_thickness = 10
+
         # Bottom
-        self.create_obstacle([int(width/2),20], 40, width, 0)
+        self.create_obstacle([int(width/2),wall_thickness/2], wall_thickness, width, 0)
         # Left
-        self.create_obstacle([20,int(height/2)], height, 40, 0)
+        self.create_obstacle([wall_thickness/2,int(height/2)], height, wall_thickness, 0)
         # Top
-        self.create_obstacle([int(width/2),height - 20], 40, width, 0)
+        self.create_obstacle([int(width/2),height - wall_thickness/2], wall_thickness, width, 0)
         # Right
-        self.create_obstacle([width - 20,int(height/2)], height, 40, 0)
+        self.create_obstacle([width - wall_thickness/2,int(height/2)], height, wall_thickness, 0)
 
         # Center obstacle
         self.create_obstacle([int(width/2), int(height/2)], 150, 150, np.pi/4)
@@ -120,4 +122,6 @@ class Game:
         # Remove
         for index in to_remove:
             self.game_objects.pop(index)
+
+        # TODO add code for bot elimination
 

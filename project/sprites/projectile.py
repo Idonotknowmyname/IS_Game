@@ -27,9 +27,13 @@ class Projectile(Dynamic, Collidable):
         self.ang_speed = 0
         self.damage = self.DAMAGE if damage is None else damage
 
+        # If damage has already been assigned (no two enemies hit with one shot)
+        self.assigned = False
+
 
     def handle_collision(self, collidable):
         if isinstance(collidable, Bot) and collidable.team != self.team:
+            assigned = True
             return -1
         elif isinstance(collidable, Obstacle):
             return -1

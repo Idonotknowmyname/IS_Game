@@ -48,8 +48,8 @@ pg.font.init()
 
 # Define display size (approx. same as arena size) and frames per second of game
 display_height = 800
-display_width = 800
-fps = 60
+display_width = 1600
+fps = 80
 
 # Number of agents per team
 n_agents = 1
@@ -129,9 +129,9 @@ while not crashed:
                     agent.shoot()
                 # Rotation
                 elif event.key == 101:
-                    agent.set_ang_speed(1)
+                    agent.ang_speed += 1
                 elif event.key == 113:
-                    agent.set_ang_speed(-1)
+                    agent.ang_speed -= 1
                 # Sprint
                 elif event.key == 304:
                     agent.MAX_SPEED *= 3
@@ -156,9 +156,9 @@ while not crashed:
 
                 # Rotation
                 elif event.key == 101:
-                    agent.set_ang_speed(0)
+                    agent.ang_speed -= 1
                 elif event.key == 113:
-                    agent.set_ang_speed(0)
+                    agent.ang_speed += 1
                     # Sprint
                 elif event.key == 304:
                     agent.MAX_SPEED /= 3
