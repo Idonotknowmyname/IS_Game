@@ -1,3 +1,5 @@
+import numpy as np
+
 class Sprite:
 
     def __init__(self):
@@ -10,7 +12,7 @@ class Sprite:
         return self.rotation
 
     def set_position(self, position):
-        self.position = position
+        self.position = np.array(position).flatten()
 
     def set_rotation(self, rotation):
         self.rotation = rotation
