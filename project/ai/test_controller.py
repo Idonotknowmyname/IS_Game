@@ -3,6 +3,7 @@ from ..sprites.obstacle import Obstacle
 from ..utils.utils import colliding
 
 import numpy as np
+from time import time
 
 class TestController(Bot):
 
@@ -32,15 +33,17 @@ class TestController(Bot):
             self.ang_speed = -np.sign(diff_rotation)
 
         # Shoot only if sight is clear
-
         if self.is_target_visible(target):
             self.set_speed([0,1])
-            # self.shoot()
+            self.shoot()
         else:
             self.set_speed([1,0])
 
 
     def is_target_visible(self, target):
+
+        start_method = time()
+
         # Create a very thin rectangular obstacle (line between bots) and check its collisions
         # Calculate distance and direction of target
         distance_vec = target.position - self.position
@@ -53,11 +56,11 @@ class TestController(Bot):
         length = abs(distance - (self.RADIUS + target.RADIUS) - 5)
         obs = Obstacle((target.position + self.position) / 2, length, thickness, direction)
 
-        # If the target is visible
-        visible = True
+        setup_time = time() - start_method
+
         # Loop through game objects and check if it collides with other obstacles
         for obj in self.game.game_objects:
-            if isinstance(obj, Obstacle):
+            if isinstance(obj, Obstacle) and not obj.is_wall:
                 if colliding(obs, obj):
                     return False
 

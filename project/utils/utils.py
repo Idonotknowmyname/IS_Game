@@ -1,4 +1,5 @@
 import numpy as np
+from time import time
 
 def get_rot_mat(theta):
     c, s = np.cos(theta), np.sin(theta)
@@ -63,6 +64,8 @@ def colliding(obj_1, obj_2):
         vertices_1 = obj_1.get_bbox()
         vertices_2 = obj_2.get_bbox()
 
+        start = time()
+
         # Loop over vertices of Obj_1
         for i in range(4):
             vertex_1 = vertices_1[i-1]
@@ -88,7 +91,7 @@ def colliding(obj_1, obj_2):
                 if max_b is None or projection > max_b:
                     max_b = projection
 
-
+            # Avg time of execution of method until here = 2.7e-05
             if max_a < min_b or max_b < min_a:
                 return False
 
@@ -117,9 +120,11 @@ def colliding(obj_1, obj_2):
                 if max_b is None or projection > max_b:
                     max_b = projection
 
+            # Avg time of execution of method until here: 6.6e-05
             if max_a < min_b or max_b < min_a:
                 return False
 
+        # Avg time of execution of method until here: 8.6e-05
         return True
 
     return False

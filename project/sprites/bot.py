@@ -16,11 +16,11 @@ class Bot(Dynamic, Collidable):
     # Bot properties
     MAX_HEALTH = 100
     # In seconds
-    RECHARGING_TIME = 0.5
+    RECHARGING_TIME = 1
 
     # Dynamic properties
-    MAX_SPEED = 80.
-    MAX_ANG_SPEED = 2.
+    MAX_SPEED = 220.
+    MAX_ANG_SPEED = 3.
 
     def __init__(self, team, game, type=0, position=None, rotation=None):
 

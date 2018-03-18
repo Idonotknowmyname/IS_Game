@@ -1,4 +1,5 @@
 import numpy as np
+from time import time
 
 from ..utils.utils import colliding
 
@@ -65,13 +66,13 @@ class Game:
         wall_thickness = 10
 
         # Bottom
-        self.create_obstacle([int(width/2),wall_thickness/2], wall_thickness, width, 0)
+        self.create_obstacle([int(width/2),wall_thickness/2], wall_thickness, width, 0, is_wall=True)
         # Left
-        self.create_obstacle([wall_thickness/2,int(height/2)], height, wall_thickness, 0)
+        self.create_obstacle([wall_thickness/2,int(height/2)], height, wall_thickness, 0, is_wall=True)
         # Top
-        self.create_obstacle([int(width/2),height - wall_thickness/2], wall_thickness, width, 0)
+        self.create_obstacle([int(width/2),height - wall_thickness/2], wall_thickness, width, 0, is_wall=True)
         # Right
-        self.create_obstacle([width - wall_thickness/2,int(height/2)], height, wall_thickness, 0)
+        self.create_obstacle([width - wall_thickness/2,int(height/2)], height, wall_thickness, 0, is_wall=True)
 
         # Other obstacles
         size = 150
@@ -103,9 +104,10 @@ class Game:
     def add_projectile(self, projectile):
         self.game_objects.append(projectile)
 
-    def create_obstacle(self, position, height, width, rotation=0):
-        obs = Obstacle(position, height, width, rotation)
+    def create_obstacle(self, position, height, width, rotation=0, is_wall=False):
+        obs = Obstacle(position, height, width, rotation, is_wall)
         self.game_objects.append(obs)
+        return obs
 
     def time_step(self, delta_t):
         for obj in self.game_objects:

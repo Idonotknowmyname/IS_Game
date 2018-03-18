@@ -15,20 +15,15 @@ class Collidable(Sprite):
         pass
 
     # Return a list of vertices in the following order [top_left, bot_left, bot_right, top_right]
-    # To be moved in Collidable
     def get_bbox(self):
-
         rel_pos_tl = np.array([-self.BOX_WIDTH / 2, self.BOX_HEIGHT / 2])
         rel_pos_bl = rel_pos_tl - np.array([0, self.BOX_HEIGHT])
 
         rot_mat = get_rot_mat(self.rotation)
-        # Obtain top-left corner relative position
-        rotated_top_left = np.asarray(rel_pos_tl * rot_mat).flatten()
 
-        # Obtain bottom_left corner relative position
-        rotated_bot_left = np.asarray(rel_pos_bl * rot_mat).flatten()
+        vertices = np.vstack([rel_pos_tl, rel_pos_bl, -rel_pos_tl, -rel_pos_bl])
+        vertices = np.asarray(vertices * rot_mat)
 
-        vertices = np.vstack([rotated_top_left, rotated_bot_left, -rotated_top_left, -rotated_bot_left])
         rep_pos = np.array([self.position] * 4)
         vertices = rep_pos + vertices
         return vertices

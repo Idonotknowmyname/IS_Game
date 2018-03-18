@@ -48,10 +48,11 @@ pg.font.init()
 # Define display size (approx. same as arena size) and frames per second of game
 display_height = 800
 display_width = 1600
-fps = 80
+fps = 60
+physics_refresh_rate = 1.8/fps
 
 # Number of agents per team
-n_agents = 1
+n_agents = 3
 
 # Identify what agent in what team is controlled by keyboard
 controlled_agent = [1,0] #Team 1 (B), bot 0
@@ -64,8 +65,8 @@ controllers = {
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [1],
-    'b': [0]
+    'a': [0, 1],
+    'b': [0, 1]
 }
 
 # Define colors
@@ -97,9 +98,11 @@ crashed = False
 # Init game
 game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings, controllers=controllers)
 
-last = time()
+phys_last_update = time()
 
 while not crashed:
+
+    start_iteration = time()
 
     # Get inputs
     for event in pg.event.get():
@@ -161,18 +164,46 @@ while not crashed:
                 elif event.key == 304:
                     agent.MAX_SPEED /= 3
 
-    # Update game
-    game.time_step(1/fps)
-    game.resolve_collisions(1/fps)
+    time_step_taken = 0
+    resolve_time = 0
 
+    # Update game
+    if True :#time() - phys_last_update >= physics_refresh_rate:
+        start_physics = time()
+        delta_t = time() - phys_last_update
+        game.time_step(delta_t)
+        time_step_taken = time() - start_physics
+        game.resolve_collisions(delta_t)
+        resolve_time = time() - start_physics - time_step_taken
+
+        '''
+        print('Time taken for game.time_step() = {}\nTime taken for game.resolve_collisions = {}'
+              .format(time_step_taken, resolve_time, physics_refresh_rate))
+        '''
+
+        phys_last_update = time()
+
+    start_draw = time()
     # Draw objects
     game_display.fill(background_col)
 
     for sprite in game.game_objects:
         draw_sprite(game_display, sprite)
 
+    draw_time = time() - start_draw
+
+    start_update = time()
     pg.display.update()
     clock.tick(fps)
+
+    update_time = time() - start_update
+
+    tot_sum = time_step_taken + resolve_time + draw_time + update_time
+
+    '''
+    print('Time taken for drawing = {}\nTime taken for updating = {}\nSum of individual times = {}\n1/fps = {}\n'
+          ''.format(draw_time, update_time, tot_sum, 1/fps))
+    '''
 
 pg.quit()
 quit()
