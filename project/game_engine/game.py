@@ -39,10 +39,29 @@ class Game:
         else:
             assert False, 'Bad number of bot given!'
 
-        # Create walls
         height = wind_size[0]
         width = wind_size[1]
 
+        # Distribute the bots based on the number and teams
+        self.base_a_pos = np.array([50, height/2])
+        self.base_b_pos = np.array([width-50, height/2])
+        dist = self.team_a[0].RADIUS * 2 + 50
+
+        # Team a
+        length = len(self.team_a)
+        for i in range(length):
+            shift = np.array([[0, dist * (i - length / 2 + 0.5)]])
+            self.team_a[i].set_position(self.base_a_pos + shift)
+            self.team_a[i].set_rotation(np.pi / 2)
+
+        # Team b
+        length = len(self.team_b)
+        for i in range(length):
+            shift = np.array([[0, dist * (i - length / 2 + 0.5)]])
+            self.team_b[i].set_position(self.base_b_pos + shift)
+            self.team_b[i].set_rotation(-np.pi / 2)
+
+        # Create walls
         wall_thickness = 10
 
         # Bottom
@@ -54,8 +73,16 @@ class Game:
         # Right
         self.create_obstacle([width - wall_thickness/2,int(height/2)], height, wall_thickness, 0)
 
-        # Center obstacle
-        self.create_obstacle([int(width/2), int(height/2)], 150, 150, np.pi/4)
+        # Other obstacles
+        size = 150
+
+        # Center
+        self.create_obstacle([int(width/2), int(height/2)], size, size, np.pi/4)
+        # Bot-left, bot-right, top-left, top-right,
+        self.create_obstacle([int(width/4 + 50), int(height/4)], size, size, np.pi/4)
+        self.create_obstacle([int(width*3/4 - 50), int(height/4)], size, size, np.pi/4)
+        self.create_obstacle([int(width/4 + 50), int(height*3/4)], size, size, np.pi/4)
+        self.create_obstacle([int(width*3/4 - 50), int(height*3/4)], size, size, np.pi/4)
 
 
     def create_bot(self, team, index, **kwargs):
@@ -63,6 +90,8 @@ class Game:
         if 'bot_settings' in kwargs.keys():
             settings = kwargs['bot_settings']
             controllers = kwargs['controllers']
+
+            index = index if index < len(settings[team]) else len(settings[team])-1
 
             new_bot = controllers[settings[team][index]](team, self)
         else:

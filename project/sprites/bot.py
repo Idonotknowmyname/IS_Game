@@ -16,7 +16,7 @@ class Bot(Dynamic, Collidable):
     # Bot properties
     MAX_HEALTH = 100
     # In seconds
-    RECHARGING_TIME = 1
+    RECHARGING_TIME = 0.5
 
     # Dynamic properties
     MAX_SPEED = 80.
