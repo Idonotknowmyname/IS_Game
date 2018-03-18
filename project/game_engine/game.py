@@ -77,6 +77,7 @@ class Game:
     def create_obstacle(self, position, height, width, rotation=0):
         obs = Obstacle(position, height, width, rotation)
         self.game_objects.append(obs)
+        return obs
 
     def time_step(self, delta_t):
         for obj in self.game_objects:
