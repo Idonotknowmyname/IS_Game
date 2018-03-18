@@ -34,8 +34,11 @@ class TestController(Bot):
         # Shoot only if sight is clear
 
         if self.is_target_visible(target):
-            pass
+            self.set_speed([0,1])
             # self.shoot()
+        else:
+            self.set_speed([1,0])
+
 
     def is_target_visible(self, target):
         # Create a very thin rectangular obstacle (line between bots) and check its collisions

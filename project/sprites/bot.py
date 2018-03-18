@@ -74,6 +74,7 @@ class Bot(Dynamic, Collidable):
         elif isinstance(collidable, Projectile):
             if collidable.team != self.team and not collidable.assigned:
                 self.health -= collidable.damage
+                self.health = max(self.health, 0)
         elif isinstance(collidable, Obstacle):
             return 1
         return 0

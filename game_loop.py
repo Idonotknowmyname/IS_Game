@@ -59,13 +59,12 @@ controlled_agent = [1,0] #Team 1 (B), bot 0
 # Define bot controllers
 controllers = {
     0 : Bot,
-    1 : CrudeController,
-    2 : TestController
+    1 : TestController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [2],
+    'a': [1],
     'b': [0]
 }
 
