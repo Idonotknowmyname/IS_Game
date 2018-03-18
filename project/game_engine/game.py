@@ -7,8 +7,6 @@ from ..sprites.dynamic import Dynamic
 from ..sprites.obstacle import Obstacle
 from ..sprites.collidable import Collidable
 
-from ..ai.crude_controller import CrudeController
-
 class Game:
 
     # Size of arena

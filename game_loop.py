@@ -5,7 +5,6 @@ from project.sprites.projectile import Projectile
 from project.sprites.obstacle import Obstacle
 from project.game_engine.game import Game
 
-from project.ai.crude_controller import CrudeController
 from project.ai.test_controller import TestController
 from time import time
 
