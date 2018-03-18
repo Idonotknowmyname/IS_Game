@@ -91,7 +91,25 @@ class TestController(Bot):
         return obstacles
 
     def is_target_visible(self, target):
-        return len(self.obstacles_on_path(target)) == 0
+        # Create a very thin rectangular obstacle (line between bots) and check its collisions
+        # Calculate distance and direction of target
+        distance_vec = target.position - self.position
+        distance = np.linalg.norm(distance_vec)
+        direction = np.arctan2(distance_vec[1], distance_vec[0])
+        direction = (-direction + np.pi / 2) % (np.pi * 2)
+
+        # Create the obstacle
+        thickness = 2
+        length = abs(distance - (self.RADIUS + target.RADIUS) - 5)
+        obs = Obstacle((target.position + self.position) / 2, length, thickness, direction)
+
+        # Loop through game objects and check if it collides with other obstacles
+        for obj in self.game.game_objects:
+            if isinstance(obj, Obstacle):
+                if colliding(obs, obj):
+                    return False
+
+        return True
 
     def avoid_bullets(self):
         # Get only the bullets
