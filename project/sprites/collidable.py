@@ -9,6 +9,7 @@ class Collidable(Sprite):
     RADIUS = 0
     # Shape of 0 = circle
     #          1 = rectangle
+    #          2 = point
     SHAPE = None
 
     def __init__(self):

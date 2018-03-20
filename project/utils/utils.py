@@ -57,6 +57,49 @@ def colliding(obj_1, obj_2):
 
             if dist_from_edge < circ.RADIUS:
                 return True
+    # If either is a point
+    elif shape_1 == 2 or shape_2 == 2:
+        # Check if both are points
+        if shape_1 == shape_2:
+            return obj_1.get_position() - obj_2.get_position() == 0
+
+        if shape_1 == 2:
+            point = obj_1
+            other = obj_2
+        else:
+            point = obj_2
+            other = obj_1
+
+        # If other is circle
+        if other.SHAPE == 0:
+            return dist - other.RADIUS > 0
+        # If other is rect
+        elif other.SHAPE == 1:
+            point_pos = point.get_position()
+            corners = other.get_bbox()
+
+            # Calculate area of rectangle and triangles made by 2 adjacent vertices of rect and the point
+            rect_area = abs((corners[0][1] - corners[2][1])*(corners[3][0] - corners[1][0]) +
+                            (corners[1][1] - corners[3][1]) * (corners[0][0] - corners[2][0]))/2
+
+            tot_area = 0
+            for i in range(4):
+                vertex_1 = corners[i-1]
+                vertex_2 = corners[i]
+
+                # Add area of triangle
+
+                triangle_area = (vertex_1[0]*(vertex_2[1] - point_pos[1]) + vertex_2[0]*(point_pos[1] - vertex_1[1]) +
+                             point_pos[0]*(vertex_1[1] - vertex_2[1]))/2
+
+                tot_area += abs(triangle_area)
+
+            # Check if total area is same as rect
+            if 0.999 < tot_area/rect_area < 1.001:
+                return True
+            else:
+                return False
+
     # If both are rectangles
     else:
         # Check for each edge if it can be used as a separating axis

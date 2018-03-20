@@ -15,7 +15,10 @@ class Game:
     ARENA_HEIGHT = 600
 
     # List of all game_objects
-    game_objects = []
+    all_game_objects = []
+
+    # Dictionary of the game objects for simplifying retrieval
+    game_objects_dict = {}
 
     # Teams of bots
     team_a = []
@@ -38,7 +41,7 @@ class Game:
             self.team_a = [self.create_bot('a', i, **kwargs) for i in range(n_agents[0])]
             self.team_b = [self.create_bot('b', i, **kwargs) for i in range(n_agents[1])]
         else:
-            assert False, 'Bad number of bot given!'
+            assert False, 'Bad number of bot given! It has to be of types list or int'
 
         height = wind_size[0]
         width = wind_size[1]
@@ -85,6 +88,23 @@ class Game:
         self.create_obstacle([int(width/4 + 50), int(height*3/4)], size, size, np.pi/4)
         self.create_obstacle([int(width*3/4 - 50), int(height*3/4)], size, size, np.pi/4)
 
+    # Add an object obj of specified type (as string)
+    def add_game_object(self, obj, type):
+        if type not in self.game_objects_dict.keys():
+            self.game_objects_dict[type] = [obj]
+        else:
+            self.game_objects_dict[type].append(obj)
+
+    def remove_game_object(self, obj, type):
+        if type in self.game_objects_dict.keys():
+            count = 0
+
+            for elem in self.game_objects_dict[type]:
+                if obj is elem:
+                    self.game_objects_dict[type].pop(count)
+                    break
+                count += 1
+
 
     def create_bot(self, team, index, **kwargs):
         # If settings for the bots are defined
@@ -98,29 +118,73 @@ class Game:
         else:
             new_bot = Bot(team, self)
 
-        self.game_objects.append(new_bot)
+        self.add_game_object(new_bot, 'bot')
         return new_bot
 
     def add_projectile(self, projectile):
-        self.game_objects.append(projectile)
+        self.add_game_object(projectile, 'projectile')
 
     def create_obstacle(self, position, height, width, rotation=0, is_wall=False):
         obs = Obstacle(position, height, width, rotation, is_wall)
-        self.game_objects.append(obs)
+        self.add_game_object(obs, 'obstacle')
         return obs
 
+    # If indexed is true, the returned list consists of
+    def get_game_objects(self, *args):
+        objects = []
+
+        # If no argument given, return all objects
+        if len(args) == 0:
+            for obj_type, obj_list in self.game_objects_dict.items():
+                objects.extend(obj_list)
+
+        else:
+            for obj_type in args:
+                assert type(obj_type) == str, 'All inputs have to be strings'
+
+                if obj_type in self.game_objects_dict.keys():
+                    objects.extend(self.game_objects_dict[obj_type])
+                else:
+                    if obj_type == 'collidable':
+                        if 'obstacle' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['obstacle'])
+
+                        if 'bot' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['bot'])
+
+                        if 'projectile' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['projectile'])
+                    elif obj_type == 'sprite':
+                        if 'obstacle' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['obstacle'])
+
+                        if 'bot' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['bot'])
+
+                        if 'projectile' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['projectile'])
+
+                    elif obj_type == 'dynamic':
+                        if 'bot' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['bot'])
+
+                        if 'projectile' in self.game_objects_dict.keys():
+                            objects.extend(self.game_objects_dict['projectile'])
+
+        return objects
+
     def time_step(self, delta_t):
-        for obj in self.game_objects:
-            if isinstance(obj, Dynamic):
-                # Update position based on speed
-                obj.update(delta_t)
+        for obj in self.get_game_objects('dynamic'):
+            # Update position based on speed
+            obj.update(delta_t)
+
             if isinstance(obj, Bot):
                 # Take action for every bot
                 obj.take_action()
 
     # Check is everything is good
     # NOTE: if a projectile hits 2 or more bots at the exact same game iter, they both lose life
-    def resolve_collisions(self, delta_t):
+    def resolve_collisions_old(self, delta_t):
         to_remove = []
         for i in range(len(self.game_objects)):
             obj_1 = self.game_objects[i]
@@ -154,3 +218,22 @@ class Game:
 
         # TODO add code for bot elimination
 
+    def resolve_collisions(self, delta_t):
+        for obj_1 in self.get_game_objects('dynamic'):
+                # Check if it is colliding with any collidables
+                for obj_2 in self.get_game_objects('collidable'):
+                    if obj_1 is not obj_2 and colliding(obj_1, obj_2):
+                        res_1 = obj_1.handle_collision(obj_2)
+                        # Remove projectile
+                        if res_1 == -1:
+                            self.remove_game_object(obj_1, 'projectile')
+                        # Push back
+                        elif res_1 == 1:
+                            obj_1.update(-delta_t)
+
+                        res_2 = obj_2.handle_collision(obj_1)
+                        # Remove projectile
+                        if res_2 == -1:
+                            self.remove_game_object(obj_2, 'projectile')
+                        elif res_2 == 1:
+                            obj_2.update(-delta_t)

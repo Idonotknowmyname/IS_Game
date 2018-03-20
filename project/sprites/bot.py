@@ -10,7 +10,7 @@ class Bot(Dynamic, Collidable):
     # Collidable properties
     BOX_HEIGHT = 70 # Overwritten in init
     BOX_WIDTH = 70 # Overwritten in init
-    RADIUS = 20
+    RADIUS = 30
     SHAPE = 0
 
     # Bot properties
@@ -19,8 +19,8 @@ class Bot(Dynamic, Collidable):
     RECHARGING_TIME = 1
 
     # Dynamic properties
-    MAX_SPEED = 220.
-    MAX_ANG_SPEED = 3.
+    MAX_SPEED = 150.
+    MAX_ANG_SPEED = 2.
 
     def __init__(self, team, game, type=0, position=None, rotation=None):
 
@@ -53,6 +53,9 @@ class Bot(Dynamic, Collidable):
 
         self.last_shot_time = time()
 
+    def get_opponents(self):
+        return self.game.team_b if self.team == 'a' else self.game.team_a
+
     def shoot(self):
 
         if time() - self.last_shot_time > self.RECHARGING_TIME:
@@ -60,7 +63,7 @@ class Bot(Dynamic, Collidable):
             bbox = self.get_bbox()
             cannon_pos = (bbox[0] + bbox[-1]) / 2
 
-            self.game.add_projectile(Projectile(cannon_pos, self.rotation, self.team))
+            self.game.add_game_object(Projectile(cannon_pos, self.rotation, self.team), 'projectile')
 
             self.last_shot_time = time()
 

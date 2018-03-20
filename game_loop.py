@@ -6,6 +6,7 @@ from project.sprites.obstacle import Obstacle
 from project.game_engine.game import Game
 
 from project.ai.test_controller import TestController
+from project.ai.base_controller import BaseController
 from time import time
 
 def draw_sprite(display, sprite):
@@ -48,7 +49,7 @@ pg.font.init()
 # Define display size (approx. same as arena size) and frames per second of game
 display_height = 800
 display_width = 1600
-fps = 60
+fps = 50
 physics_refresh_rate = 1.8/fps
 
 # Number of agents per team
@@ -60,19 +61,20 @@ controlled_agent = [1,0] #Team 1 (B), bot 0
 # Define bot controllers
 controllers = {
     0 : Bot,
-    1 : TestController
+    1 : TestController,
+    2 : BaseController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 1],
-    'b': [0, 1]
+    'a': [0, 2],
+    'b': [0, 2]
 }
 
 # Define colors
 black = (0,0,0)
-background_col = (200, 200, 200)
-obstacle_col = (150, 0, 150)
+background_col = (255, 255, 255)
+obstacle_col = (0, 204, 0)
 projectile_col = (122,122,0)
 
 team_colors = {
@@ -98,7 +100,9 @@ crashed = False
 # Init game
 game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings, controllers=controllers)
 
-phys_last_update = time()
+last_iter_time = time()
+
+print_time = False
 
 while not crashed:
 
@@ -136,6 +140,7 @@ while not crashed:
                 # Sprint
                 elif event.key == 304:
                     agent.MAX_SPEED *= 3
+                    agent.MAX_ANG_SPEED *= 3
 
         elif event.type == pg.KEYUP:
             if controlled_agent is not None:
@@ -163,31 +168,26 @@ while not crashed:
                     # Sprint
                 elif event.key == 304:
                     agent.MAX_SPEED /= 3
-
-    time_step_taken = 0
-    resolve_time = 0
+                    agent.MAX_ANG_SPEED /= 3
 
     # Update game
-    if True :#time() - phys_last_update >= physics_refresh_rate:
-        start_physics = time()
-        delta_t = time() - phys_last_update
-        game.time_step(delta_t)
-        time_step_taken = time() - start_physics
-        game.resolve_collisions(delta_t)
-        resolve_time = time() - start_physics - time_step_taken
+    start_physics = time()
+    delta_t = time() - last_iter_time
+    last_iter_time = time()
+    game.time_step(delta_t)
+    time_step_taken = time() - start_physics
+    game.resolve_collisions(delta_t)
+    resolve_time = time() - start_physics - time_step_taken
 
-        '''
-        print('Time taken for game.time_step() = {}\nTime taken for game.resolve_collisions = {}'
-              .format(time_step_taken, resolve_time, physics_refresh_rate))
-        '''
-
-        phys_last_update = time()
+    if print_time:
+            print('Time taken for game.time_step() = {}\nTime taken for game.resolve_collisions = {}'
+                  .format(time_step_taken, resolve_time, physics_refresh_rate))
 
     start_draw = time()
     # Draw objects
     game_display.fill(background_col)
 
-    for sprite in game.game_objects:
+    for sprite in game.get_game_objects('sprite'):
         draw_sprite(game_display, sprite)
 
     draw_time = time() - start_draw
@@ -200,10 +200,9 @@ while not crashed:
 
     tot_sum = time_step_taken + resolve_time + draw_time + update_time
 
-    '''
-    print('Time taken for drawing = {}\nTime taken for updating = {}\nSum of individual times = {}\n1/fps = {}\n'
-          ''.format(draw_time, update_time, tot_sum, 1/fps))
-    '''
+    if print_time:
+        print('Time taken for drawing = {}\nTime taken for updating = {}\nSum of individual times = {}\n1/fps = {}\n'
+              ''.format(draw_time, update_time, tot_sum, 1/fps))
 
 pg.quit()
 quit()

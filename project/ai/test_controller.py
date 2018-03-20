@@ -5,6 +5,7 @@ from ..utils.utils import get_rot_mat
 from ..sprites.projectile import Projectile
 
 import numpy as np
+from time import time
 
 class TestController(Bot):
 
@@ -12,6 +13,8 @@ class TestController(Bot):
         super(TestController, self).__init__(team,game,type,position,rotation)
 
     def take_action(self):
+
+        start = time()
 
         #Get the first bot from enemy team
         opponents = self.game.team_b if self.team == 'a' else self.game.team_a
@@ -33,14 +36,18 @@ class TestController(Bot):
         else:
             self.ang_speed = -np.sign(diff_rotation)
 
-        # Shoot only if sight is clear
+        setup_time = time() - start
 
-        if self.is_target_visible(target):
+        # Shoot only if sight is clear
+        obstacle_list = self.obstacles_on_path(target)
+
+        find_obs_list_time = time() - start - setup_time
+
+        if len(obstacle_list) == 0:
             self.set_speed([0,0])
             # self.shoot()
         else:
             # Find the closest obstacle to avoid
-            obstacle_list = self.obstacles_on_path(target)
             obstacle_list = sorted(obstacle_list, key = lambda x:
             np.linalg.norm(x.position - self.position))
             first_obstacle = obstacle_list[0]
@@ -57,11 +64,19 @@ class TestController(Bot):
             else:
                 self.set_speed([-1,0])
 
+        calc_time = time() - start - setup_time - find_obs_list_time
+
         # Avoid incoming bullets
         dodge_direction = self.avoid_bullets()
 
+        avoiding_time = time() - start - calc_time - setup_time - find_obs_list_time
+
         if dodge_direction != 0:
             self.set_speed([dodge_direction, 0])
+
+        print('Total time for take_action = {}\nTotal setup time = {}\nFind obstacle list time = {}\nTotal calculation time = {}\nTotal avoiding time '
+              '= {}'.format(time() - start, setup_time, find_obs_list_time, calc_time, avoiding_time))
+        print()
 
 
     def obstacles_on_path(self, target):
@@ -83,10 +98,11 @@ class TestController(Bot):
         # If the target is visible
         visible = True
         # Loop through game objects and check if it collides with other obstacles
-        for obj in self.game.game_objects:
-            if isinstance(obj, Obstacle):
-                if colliding(obs, obj):
-                    obstacles.append(obj)
+        for obj in self.game.get_game_objects('obstacle'):
+
+            collision = colliding(obs, obj)
+            if collision:
+                obstacles.append(obj)
 
         return obstacles
 
@@ -104,16 +120,15 @@ class TestController(Bot):
         obs = Obstacle((target.position + self.position) / 2, length, thickness, direction)
 
         # Loop through game objects and check if it collides with other obstacles
-        for obj in self.game.game_objects:
-            if isinstance(obj, Obstacle):
-                if colliding(obs, obj):
-                    return False
+        for obj in self.game.get_game_objects('obstacle'):
+            if colliding(obs, obj):
+                return False
 
         return True
 
     def avoid_bullets(self):
         # Get only the bullets
-        bullet_list = list(filter(lambda x: isinstance(x,Projectile),self.game.game_objects))
+        bullet_list = self.game.get_game_objects('projectile')
 
         # Get only bullets that will collide
         bullet_positions = list(filter(lambda x: self.bullet_collides(x), bullet_list))

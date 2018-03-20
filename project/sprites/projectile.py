@@ -7,7 +7,7 @@ import numpy as np
 class Projectile(Dynamic, Collidable):
 
     # Dynamic properties
-    MAX_SPEED = 350.
+    MAX_SPEED = 250.
     MAX_ANG_SPEED = 0.
 
     # Projectile properties
