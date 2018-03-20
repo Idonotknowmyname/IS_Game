@@ -50,7 +50,7 @@ class BaseController(Bot):
         direction = (-direction + np.pi / 2) % (np.pi * 2)
 
         # Create the obstacle
-        thickness = 2
+        thickness = Projectile.RADIUS * 2
         length = abs(distance - (self.RADIUS + target.RADIUS) - 5)
         obs = Obstacle((target.position + self.position) / 2, length, thickness, direction)
 

@@ -1,7 +1,7 @@
 import numpy as np
 from time import time
 
-from ..utils.utils import colliding
+from ..utils.utils import colliding, get_normal_to_surface
 
 from ..sprites.bot import Bot
 from ..sprites.dynamic import Dynamic
@@ -229,11 +229,16 @@ class Game:
                             self.remove_game_object(obj_1, 'projectile')
                         # Push back
                         elif res_1 == 1:
-                            obj_1.update(-delta_t)
+                            normal = get_normal_to_surface(obj_1, obj_2)
+                            obj_1.position = obj_1.position + normal
+                            # obj_1.update(-delta_t)
 
                         res_2 = obj_2.handle_collision(obj_1)
                         # Remove projectile
                         if res_2 == -1:
                             self.remove_game_object(obj_2, 'projectile')
                         elif res_2 == 1:
-                            obj_2.update(-delta_t)
+                            pass
+                            # normal = get_normal_to_surface(obj_2, obj_1)
+                            # obj_2.position = obj_2.position + normal
+                            # obj_2.update(-delta_t)

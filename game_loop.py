@@ -75,7 +75,7 @@ bot_settings = {
 black = (0,0,0)
 background_col = (255, 255, 255)
 obstacle_col = (0, 204, 0)
-projectile_col = (122,122,0)
+projectile_col = (0,0,0)
 
 team_colors = {
     'a': (255,0,0), # Red

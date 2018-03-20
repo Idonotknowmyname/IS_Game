@@ -172,4 +172,63 @@ def colliding(obj_1, obj_2):
 
     return False
 
+# Returns were to push the bot to not be colliding anymore
+def get_normal_to_surface(bot, obs):
 
+    temp_res = np.zeros((2))
+
+    # If the bot is colliding with another bot
+    if obs.SHAPE == 0:
+        vector = bot.get_position() - obs.get_position()
+        dist = np.linalg.norm(vector)
+
+        length = obs.RADIUS + bot.RADIUS - dist
+
+        return vector/dist * length
+    # Colliding with Obstacle (rect)
+    elif obs.SHAPE == 1:
+        # Iter through edges and check if they intersect
+        rect_bbox = obs.get_bbox()
+
+        for i in range(4):
+            vertex_1 = rect_bbox[i - 1]
+            vertex_2 = rect_bbox[i]
+
+            edge_vec = vertex_2 - vertex_1
+
+            normal_to_edge = np.array([edge_vec[1], -edge_vec[0]])
+
+            # Vector from bot center and vertex
+            vert_to_pos_1 = bot.get_position() - vertex_1
+            vert_to_pos_2 = bot.get_position() - vertex_2
+
+            # If first vertex is inside circle
+            if np.linalg.norm(bot.get_position() - vertex_1) < bot.RADIUS:
+                # If the vector points outwards the obstacle
+                if np.dot(vert_to_pos_1, normal_to_edge) >= 0:
+                    temp_res = vert_to_pos_1* (bot.RADIUS/ np.linalg.norm(vert_to_pos_1) - 1)
+
+            # If second vertex is inside circle
+            if np.linalg.norm(bot.get_position() - vertex_2) < bot.RADIUS:
+                # If the vector points outwards the obstacle
+                if np.dot(vert_to_pos_2, normal_to_edge) >= 0:
+                    temp_res =  vert_to_pos_2 * (bot.RADIUS/ np.linalg.norm(vert_to_pos_2) - 1)
+
+            # Check if we are on the correct side of the edge (d >= 0)
+            d = np.cross(edge_vec , -vert_to_pos_1)
+
+            # Check if we are too far on the side of the edge
+            too_far_1 = (np.dot(vert_to_pos_1, edge_vec)/np.linalg.norm(edge_vec)) > np.linalg.norm(edge_vec)
+            too_far_2 = (np.dot(vert_to_pos_2, -edge_vec)/np.linalg.norm(edge_vec)) > np.linalg.norm(edge_vec)
+
+            if d < 0 or too_far_1 or too_far_2:
+                continue
+
+            # Check if edge intersect circle
+            dist_from_edge = np.linalg.norm(d) / np.linalg.norm(vertex_2 - vertex_1)
+
+            # print('Distance from edge is {}, radius is {}\nVector push is {}'.format(dist_from_edge, bot.RADIUS, vec))
+
+            if dist_from_edge < bot.RADIUS:
+                return normal_to_edge / np.linalg.norm(normal_to_edge) * (bot.RADIUS - dist_from_edge)
+    return temp_res
