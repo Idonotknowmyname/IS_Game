@@ -218,8 +218,11 @@ class Game:
             obj.update(delta_t)
 
             if isinstance(obj, Bot):
-                # Take action for every bot
-                obj.take_action()
+                if obj.health <= 0:
+                    self.remove_game_object(obj, 'bot')
+                else:
+                    # Take action for every bot
+                    obj.take_action()
 
     # Check is everything is good
     # NOTE: if a projectile hits 2 or more bots at the exact same game iter, they both lose life

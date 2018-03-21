@@ -86,13 +86,11 @@ class PathfindController(BaseController):
         # Backtrack to find path
         path = []
         current = target_node
-        print('Traceback starting node {} [target]'.format(current))
         while current is not None:
             path.append(current)
             current = came_from[current]
         path.reverse()
 
-        print('Path found of length {}'.format(len(path)))
 
         return path
 

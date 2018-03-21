@@ -81,7 +81,7 @@ controllers = {
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [3, 3, 3],
+    'a': [0, 3, 0],
     'b': [0, 0, 0]
 }
 
