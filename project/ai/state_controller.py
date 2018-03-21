@@ -5,11 +5,12 @@ from ..sprites.point import Point
 
 class StateController(PathfindController):
 
-    states = {}
+    states = None
     current_state = None
 
     def __init__(self, team, game, type=0, position=None, rotation=None):
         super(StateController,self).__init__(team,game,type,position,rotation)
+        self.states = {}
         self.initialize_states()
 
     def initialize_states(self):
@@ -24,7 +25,7 @@ class StateController(PathfindController):
         self.states["Search"] = self.search
 
         # Fire at target
-        self.states["Shoot"] = self.shoot
+        self.states["Shoot"] = self.shoot_action
 
         self.current_state = self.states["Roam"]
 
@@ -39,8 +40,11 @@ class StateController(PathfindController):
         opponents = list(filter(lambda x: self.is_target_visible(x), self.get_opponents()))
         if len(opponents) > 0:
             # Closest opponent as target
-            closest_opponent_index = np.argmin([np.linalg.norm(self.position() - x.position) for x in opponents])
-            self.target = opponents[closest_opponent_index[0]]
+            closest_opponent_index = np.argmin([np.linalg.norm(self.get_position() - x.get_position()) for x in opponents])
+            index = closest_opponent_index if type(closest_opponent_index) is np.int64 else closest_opponent_index[0]
+
+            self.target = opponents[index]
+
             # Change state to shoot
             self.current_state = self.states["Shoot"]
 
@@ -73,9 +77,6 @@ class StateController(PathfindController):
         else:
             self.follow_path()
 
-    def select(self):
-        pass
-
     def search(self):
         if not self.is_path_removable():
             self.follow_path()
@@ -83,16 +84,8 @@ class StateController(PathfindController):
             self.target = None
             self.path_to_target = None
 
-    def shoot(self):
+    def shoot_action(self):
         if self.target is not None and self.rotate_towards(self.target):
+            self.set_speed(np.array([0, 0]))
             self.shoot()
 
-    class State:
-
-        state_action = None
-
-        def __init__(self, action):
-            self.state_action = action
-
-        def take_action(self):
-            self.state_action(self)

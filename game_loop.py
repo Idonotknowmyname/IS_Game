@@ -84,7 +84,7 @@ controllers = {
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
     'a': [4, 4, 4],
-    'b': [0, 0, 0]
+    'b': [4, 4, 4]
 }
 
 # Define colors
@@ -121,7 +121,7 @@ last_iter_time = time()
 
 print_time = False
 
-while not crashed:
+while not crashed and not game.is_game_over():
 
     start_iteration = time()
 

@@ -144,6 +144,18 @@ class Game:
                     break
                 count += 1
 
+        if type == 'bot':
+            count = 0
+            team = self.team_a if obj.team == 'a' else self.team_b
+            for elem in team:
+                if obj is elem:
+                    if obj.team == 'a':
+                        self.team_a.pop(count)
+                    else:
+                        self.team_b.pop(count)
+                    break
+                count += 1
+
 
     def create_bot(self, team, index, **kwargs):
         # If settings for the bots are defined
@@ -284,3 +296,8 @@ class Game:
                             # normal = get_normal_to_surface(obj_2, obj_1)
                             # obj_2.position = obj_2.position + normal
                             # obj_2.update(-delta_t)
+
+
+
+    def is_game_over(self):
+        return len(self.team_a) == 0 or len(self.team_b) == 0
