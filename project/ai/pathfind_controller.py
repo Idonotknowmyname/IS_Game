@@ -12,6 +12,7 @@ class PathfindController(BaseController):
 
     target = None
     path_to_target = None
+    path_step = 0
 
     def take_action(self):
 
@@ -91,6 +92,7 @@ class PathfindController(BaseController):
             current = came_from[current]
         path.reverse()
 
+        self.path_step = 0
 
         return path
 

@@ -8,6 +8,7 @@ from project.game_engine.game import Game
 from project.ai.test_controller import TestController
 from project.ai.base_controller import BaseController
 from project.ai.pathfind_controller import PathfindController
+from project.ai.state_controller import StateController
 from time import time
 
 def draw_sprite(display, sprite):
@@ -76,12 +77,13 @@ controllers = {
     0 : Bot,
     1 : TestController,
     2 : BaseController,
-    3 : PathfindController
+    3 : PathfindController,
+    4 : StateController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 3, 0],
+    'a': [4, 4, 4],
     'b': [0, 0, 0]
 }
 
