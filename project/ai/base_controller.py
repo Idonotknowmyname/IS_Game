@@ -36,10 +36,13 @@ class BaseController(Bot):
 
         if min(abs((np.pi * 2 - diff_rotation) % (np.pi * 2)), abs(diff_rotation)) < eps:
             self.ang_speed = 0
+            return True
         elif abs(diff_rotation) < abs((np.pi * 2 - diff_rotation) % (np.pi * 2)):
             self.ang_speed = np.sign(diff_rotation)
         else:
             self.ang_speed = -np.sign(diff_rotation)
+
+        return False
 
     def is_target_visible(self, target):
         # Create a very thin rectangular obstacle (line between bots) and check its collisions

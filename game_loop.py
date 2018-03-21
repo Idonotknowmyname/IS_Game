@@ -7,6 +7,7 @@ from project.game_engine.game import Game
 
 from project.ai.test_controller import TestController
 from project.ai.base_controller import BaseController
+from project.ai.pathfind_controller import PathfindController
 from time import time
 
 def draw_sprite(display, sprite):
@@ -43,6 +44,15 @@ def draw_sprite(display, sprite):
         vertices[:, 1] = display_height - vertices[:, 1]
         pg.draw.polygon(game_display, obstacle_col, vertices, 0)
 
+def draw_grid_path(game, size):
+    graph = game.grid
+
+    for i in range(graph.shape[0]):
+        for j in range(graph.shape[1]):
+            if not graph[i, j]:
+                col = (255, 153, 153)
+                pg.draw.rect(game_display, col, (j*size, i*size, size, size))
+
 pg.init()
 pg.font.init()
 
@@ -51,6 +61,9 @@ display_height = 800
 display_width = 1600
 fps = 50
 physics_refresh_rate = 1.8/fps
+
+# Already precomputed values = (5, 10, 15)
+grid_path = 15
 
 # Number of agents per team
 n_agents = 3
@@ -62,13 +75,14 @@ controlled_agent = [1,0] #Team 1 (B), bot 0
 controllers = {
     0 : Bot,
     1 : TestController,
-    2 : BaseController
+    2 : BaseController,
+    3 : PathfindController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 2],
-    'b': [0, 2]
+    'a': [0, 3, 0],
+    'b': [0, 0, 0]
 }
 
 # Define colors
@@ -98,7 +112,8 @@ clock = pg.time.Clock()
 crashed = False
 
 # Init game
-game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings, controllers=controllers)
+game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
+            controllers=controllers, grid_path=grid_path)
 
 last_iter_time = time()
 
@@ -186,6 +201,8 @@ while not crashed:
     start_draw = time()
     # Draw objects
     game_display.fill(background_col)
+
+    # draw_grid_path(game, grid_path)
 
     for sprite in game.get_game_objects('sprite'):
         draw_sprite(game_display, sprite)

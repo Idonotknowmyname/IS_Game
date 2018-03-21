@@ -174,7 +174,6 @@ def colliding(obj_1, obj_2):
 
 # Returns were to push the bot to not be colliding anymore
 def get_normal_to_surface(bot, obs):
-
     temp_res = np.zeros((2))
 
     # If the bot is colliding with another bot

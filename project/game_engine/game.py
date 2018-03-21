@@ -1,7 +1,9 @@
 import numpy as np
 from time import time
+import os
 
 from ..utils.utils import colliding, get_normal_to_surface
+from ..utils.rect_grid import RectGrid
 
 from ..sprites.bot import Bot
 from ..sprites.dynamic import Dynamic
@@ -87,6 +89,43 @@ class Game:
         self.create_obstacle([int(width*3/4 - 50), int(height/4)], size, size, np.pi/4)
         self.create_obstacle([int(width/4 + 50), int(height*3/4)], size, size, np.pi/4)
         self.create_obstacle([int(width*3/4 - 50), int(height*3/4)], size, size, np.pi/4)
+
+        # If specified, create grid of map with spaces where bot can go
+        if 'grid_path' in kwargs.keys():
+                size = kwargs['grid_path']
+                assert type(size) == int
+
+                path = 'map_grid/{}.npy'.format(size)
+
+                if os.path.isfile(path):
+                    self.grid = np.load(path)
+                else:
+                    self.grid = self.create_grid(kwargs['grid_path'])
+                    np.save(path, self.grid)
+
+                self.cell_size = size
+    # Create a graph of the map with the specified coverage of one cell, for pathfinding and such
+    def create_grid(self, cell_size):
+        graph_height = int(self.window_size[0] / cell_size) + 1
+        graph_width = int(self.window_size[1] / cell_size) + 1
+
+        grid = np.empty((graph_height, graph_width), dtype=bool)
+        grid[:] = True
+
+        # Check if bot can be in specific cells
+        test_bot = Bot('test', self)
+
+        for i in range(graph_height):
+            for j in range(graph_width):
+                pos = [(j+0.5) * cell_size, (i+0.5) * cell_size]
+                test_bot.set_position(np.array(pos))
+
+                for obs in self.get_game_objects('obstacle'):
+                    if colliding(test_bot, obs):
+                        grid[i, j] = False
+                        break
+
+        return grid
 
     # Add an object obj of specified type (as string)
     def add_game_object(self, obj, type):
