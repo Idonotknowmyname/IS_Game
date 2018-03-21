@@ -20,6 +20,7 @@ class PathfindController(BaseController):
 
         if self.is_target_visible(target):
             self.set_speed(np.array([0,0]))
+            self.path_to_target = None
             if self.rotate_towards(target):
                 self.shoot()
         else:
