@@ -10,6 +10,7 @@ from project.ai.base_controller import BaseController
 from project.ai.pathfind_controller import PathfindController
 from project.ai.state_controller import StateController
 from project.ai.deep_ql_controller import DeepQLController
+from project.ai.mcts_controller import MCTSController
 
 from time import time
 import os
@@ -85,12 +86,13 @@ controllers = {
     2 : BaseController,
     3 : PathfindController,
     4 : StateController,
-    5 : DeepQLController
+    5 : DeepQLController,
+    6 : MCTSController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 5, 0],
+    'a': [0, 6, 0],
     'b': [0, 0, 0]
 }
 

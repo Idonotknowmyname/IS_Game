@@ -1,6 +1,7 @@
 import numpy as np
 from time import time
 import os
+from copy import copy
 
 from ..utils.utils import colliding, get_normal_to_surface
 from ..utils.rect_grid import RectGrid
@@ -14,16 +15,17 @@ from ..ai.ql_controller import QLController
 
 class Game:
 
-    # Dictionary of the game objects for simplifying retrieval
-    game_objects_dict = {}
-
-    # Teams of bots
-    team_a = []
-    team_b = []
+    # # Dictionary of the game objects for simplifying retrieval
+    # game_objects_dict = {}
+    #
+    # # Teams of bots
+    # team_a = []
+    # team_b = []
 
     def __init__(self, n_agents, wind_size, **kwargs):
         self.team_a = []
         self.team_b = []
+        self.game_objects_dict = {}
 
         self.window_size = wind_size
 
@@ -104,13 +106,18 @@ class Game:
     # Deepclone for MCTS's
     def __deepcopy__(self, memodict={}):
 
-        copy_game = Game(n_agents=0, wind_size=self.window_size)
+        copy_game = Game(n_agents=1, wind_size=self.window_size)
+        copy_game.team_a = []
+        copy_game.team_b = []
+        for bot in copy_game.get_game_objects('bot'): copy_game.remove_game_object(bot, 'bot')
 
         for projectile in self.get_game_objects("projectile"):
-            copy_game.add_projectile(projectile.copy())
+            copy_game.add_projectile(copy(projectile))
 
+        print(len(self.get_game_objects('bot')))
         for bot in self.get_game_objects("bot"):
-            copy_bot = bot.copy()
+            copy_bot = copy(bot)
+            copy_bot.game = copy_game
             copy_game.add_game_object(copy_bot, "bot")
             if copy_bot.team == "a":
                 copy_game.team_a.append(copy_bot)
@@ -304,7 +311,6 @@ class Game:
 
         # Initialize the round hit count
         self.step_hits = {x: 0 for x in self.step_hits.keys()}
-
         for obj_1 in self.get_game_objects('dynamic'):
                 # Check if it is colliding with any collidables
                 for obj_2 in self.get_game_objects('collidable'):
