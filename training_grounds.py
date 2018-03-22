@@ -1,6 +1,7 @@
 from time import time
 import numpy as np
 import os
+from keras.models import load_model
 
 from project.game_engine.game import Game
 
@@ -33,20 +34,45 @@ def print_with_time(data, **kwargs):
 
     last_time = time()
 
+team_a_sizes = []
+team_b_sizes = []
+
 def continue_simulation(game):
-    pass
+    global team_a_sizes, team_b_sizes
+
+    still_QL_in_a = 'Deep QL Controller' in [x.get_bot_type() for x in game.team_a]
+    still_QL_in_b = 'Deep QL Controller' in [x.get_bot_type() for x in game.team_b]
+
+    return still_QL_in_a or still_QL_in_b
+
+def get_rand_bot_settings(probs=None, avail_opts=None):
+
+    # Put some random bots in the game
+    if probs is None:
+        probs = [0.2, 0.3, 0.5]
+
+    # Either TestController, BaseController, PathfindController, StateController
+    if avail_opts is None:
+        avail_opts = [2, 3, 4]
+
+    team_a_sett = np.random.choice(avail_opts, n_agents, replace=True, p=probs)
+    team_b_sett = np.random.choice(avail_opts, n_agents, replace=True, p=probs)
+
+    return {'a': team_a_sett, 'b': team_b_sett}
 
 # Update timestep
 delta_t = 1/30
 
-episodes = 20
+episodes = 30
 
 # Max number of seconds an episode can last
 max_episode_length = 100
 
-bot_1 = DeepQLController(None, None)
+model_1 = load_model('deep_q_models/test_1_FFNN (30 episodes).h5')
+bot_1 = DeepQLController(None, None, model=model_1)
 
-bot_2 = DeepQLController(None, None)
+model_2 = load_model('deep_q_models/test_2_FFNN (30 episodes).h5')
+bot_2 = DeepQLController(None, None, model=model_2)
 
 insert_bots = [(bot_1, 'a', 1), (bot_2, 'b', 1)]
 
@@ -73,17 +99,11 @@ print_time = False
 log_every_n_seconds = 10
 
 for i in range(episodes):
-    # Put some random bots in the game
-    probs = [0.2, 0.3, 0.5]
 
-    # Either TestController, BaseController, PathfindController, StateController
-    avail_opts = [2, 3, 4]
+    bot_1.init_memory()
+    bot_2.init_memory()
 
-    team_a_sett = np.random.choice(avail_opts, n_agents, replace=True, p=probs)
-    team_b_sett = np.random.choice(avail_opts, n_agents, replace=True, p=probs)
-
-    bot_settings = {'a' : team_a_sett,
-                    'b' : team_b_sett}
+    bot_settings = get_rand_bot_settings(probs=[0, 0.6, 0.4])
 
     # Init game
     game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
@@ -92,9 +112,7 @@ for i in range(episodes):
     print_with_time('Starting episode {}, team a = {}, team b = {}'.format(i, bot_settings['a'], bot_settings['b']))
 
     last_iter_time = time()
-
     tot_shots_hit = {bot_1: 0, bot_2: 0}
-
     episode_start = time()
     iter_count = 0
 
@@ -143,5 +161,5 @@ for i in range(episodes):
                     .format(i, tot_shots_hit[bot_1], tot_shots_hit[bot_2]))
 
 
-bot_1.save_model('test_1_FFNN')
-bot_2.save_model('test_2_FFNN')
+bot_1.save_model('test_1_FFNN (60 episodes)')
+bot_2.save_model('test_2_FFNN (60 episodes)')

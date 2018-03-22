@@ -119,7 +119,6 @@ class StateController(PathfindController):
         return 'State Controller'
 
     def search(self):
-        print("Searching")
         if not self.is_path_removable():
             self.follow_path()
         else:

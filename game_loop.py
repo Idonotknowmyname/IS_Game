@@ -1,5 +1,7 @@
 import pygame as pg
 import numpy as np
+from keras.models import load_model
+
 from project.sprites.bot import Bot
 from project.sprites.projectile import Projectile
 from project.sprites.obstacle import Obstacle
@@ -87,11 +89,17 @@ controllers = {
     4 : StateController,
     5 : DeepQLController
 }
+
+bot_1 = DeepQLController(None, None, model=load_model('deep_q_models/test_1_FFNN (60 episodes).h5'))
+bot_2 = DeepQLController(None, None, model=load_model('deep_q_models/test_2_FFNN (60 episodes).h5'))
+
+insert_bots = [(bot_1, 'a', 1), (bot_2, 'b', 1)]
+
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 4, 0],
-    'b': [0, 4, 0]
+    'a': [0, 5, 0],
+    'b': [0, 5, 0]
 }
 
 # Define colors

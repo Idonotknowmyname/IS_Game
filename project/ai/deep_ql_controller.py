@@ -1,5 +1,6 @@
 from .ql_controller import QLController
 import numpy as np
+from time import time
 
 from keras.models import Sequential
 from keras.layers import Dense, InputLayer
@@ -18,7 +19,9 @@ class DeepQLController(QLController):
                   'closest_proj_x', 'closest_proj_y', 'closest_proj_dot']
 
     def __init__(self, team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000, model=None):
-        super(DeepQLController, self).__init__(team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000)
+        super(DeepQLController, self).__init__(team, game, position=None, rotation=None, eps=0.3, lam=0.9, memory_size=5000)
+
+        self.time_last_big_training = time()
 
         if model is not None:
             self.model = model
@@ -34,7 +37,7 @@ class DeepQLController(QLController):
 
         model = Sequential()
         model.add(InputLayer((n_inputs,)))
-        model.add(Dense(20, activation='relu'))
+        model.add(Dense(12, activation='relu'))
         model.add(Dense(20, activation='relu'))
         model.add(Dense(n_outputs, activation='linear'))
 
@@ -49,7 +52,7 @@ class DeepQLController(QLController):
         # Add state transition to memory
         self.add_to_memory(self.last_state, self.last_action, reward, new_state)
 
-        # If the reward is non-zero, 50% chance of learning already from last transition
+        # If the reward is non-zero, 50% chance of learning already from last seq_length transitions
         if not reward == 0 and np.random.rand() < 0.5:
             state, action, reward, next_state = self.sample_from_memory(last=True)
         else:
@@ -70,12 +73,7 @@ class DeepQLController(QLController):
 
     # Might not add to memory if reward is == 0
     def add_to_memory(self, last_state, last_action, reward, new_state):
-        prob = 0.3
-        if reward == 0 and len(self.memory) >= 1:
-            if np.random.rand() > prob:
-                super(DeepQLController, self).add_to_memory(last_state, last_action, reward, new_state)
-        else:
-            super(DeepQLController, self).add_to_memory(last_state, last_action, reward, new_state)
+        super(DeepQLController, self).add_to_memory(last_state, last_action, reward, new_state)
 
     def get_reward(self):
 
@@ -89,7 +87,7 @@ class DeepQLController(QLController):
             # Get health in last state and compare with now
             self_hit = (self.last_state[3]*self.MAX_HEALTH - self.health)/Projectile.DAMAGE
 
-        return enemy_hit - self_hit
+        return (3 * enemy_hit - 2 * self_hit) * 2
 
     def get_env_state(self):
         scr_height, scr_width = self.game.window_size
@@ -103,7 +101,7 @@ class DeepQLController(QLController):
         health = self.health / self.MAX_HEALTH
         opp_x = opponent.get_position()[0] / scr_width
         opp_y = opponent.get_position()[1] / scr_height
-        visible = 1 if self.is_target_visible(opponent) else 0
+        opp_visible = 1 if self.is_target_visible(opponent) else 0
         proj = self.get_closest_enemy_projectile()
 
         if proj is None:
@@ -121,7 +119,7 @@ class DeepQLController(QLController):
 
             proj_dot = np.dot(proj_speed, dir_vec / np.linalg.norm(dir_vec))/2 + 0.5
 
-        state = np.array([x, y, rot, health, opp_x, opp_y, visible, proj_x, proj_y, proj_dot])
+        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot])
 
         return state
 
@@ -170,8 +168,11 @@ class DeepQLController(QLController):
     def get_action_list(self, env_state):
         return np.arange(len(self.avail_actions))
 
-    def get_q_val(self, state, actions):
-        return self.q_func.predict(np.reshape(state, (1, len(state))))
+    def get_q_val(self, state, actions=None):
+        if len(state.shape) == 1:
+            return self.q_func.predict(np.reshape(state, (1, len(state))))
+        else:
+            return self.q_func.predict(state)
 
     def save_model(self, name):
         self.q_func.save('deep_q_models/{}.h5'.format(name))
