@@ -6,8 +6,15 @@ from ..utils.utils import get_rot_mat
 
 class StateController(PathfindController):
 
+    # State vars
     states = None
     current_state = None
+
+    # Dodging vars
+    can_dodge_direction = None
+    can_dodge_inverse_direction = None
+    backing_direction = None
+    dodge_direction = None
 
     def __init__(self, team, game, position=None, rotation=None):
         super(StateController,self).__init__(team,game,position,rotation)
@@ -143,33 +150,33 @@ class StateController(PathfindController):
     def dodge(self, direction, bullet_direction):
         self.set_ang_speed(0)
 
-        rot_mat = get_rot_mat(-self.get_rotation())
+        if self.dodge_direction is None:
+            rot_mat = get_rot_mat(-self.get_rotation())
 
-        can_move_to_direction = True
-        for i in range(5):
-            if not self.game.grid[self.get_grid_node(self.get_position() + (i / 5) * direction)]:
-                can_move_to_direction = False
+            self.can_dodge_direction = True
+            for i in range(5):
+                if not self.game.grid[self.get_grid_node(self.get_position() + (i / 5) * direction)]:
+                    self.can_dodge_direction = False
 
-        move_to_inverse_direction = True
-        for i in range(5):
-            if not self.game.grid[self.get_grid_node(self.get_position() + (i / 5) * -direction)]:
-                move_to_inverse_direction = False
+            self.can_dodge_inverse_direction = True
+            for i in range(5):
+                if not self.game.grid[self.get_grid_node(self.get_position() + (i / 5) * -direction)]:
+                    self.can_dodge_inverse_direction = False
 
-        # Get the direction w.r.t. current rotation, normalized
-        dodge_direction = np.asarray(direction * rot_mat).flatten() / np.linalg.norm(direction)
+            # Get the direction w.r.t. current rotation, normalized
+            self.dodge_direction = np.asarray(direction * rot_mat).flatten() / np.linalg.norm(direction)
+            self.backing_direction = np.asarray(bullet_direction * rot_mat).flatten() / np.linalg.norm(bullet_direction)
 
-        if can_move_to_direction:
-            self.set_speed(dodge_direction)
-        elif move_to_inverse_direction:
-            print("Moving to inverse")
-            self.set_speed(-dodge_direction)
+        if self.can_dodge_direction:
+            self.set_speed(self.dodge_direction)
+        elif self.can_dodge_inverse_direction:
+            self.set_speed(-self.dodge_direction)
         else:
-            print("Backing")
-            backing_direction = np.asarray(bullet_direction * rot_mat).flatten() / np.linalg.norm(bullet_direction)
-            self.set_speed(backing_direction)
+            self.set_speed(self.backing_direction)
 
         if not self.check_for_dodge():
             self.current_state = "Roam"
+            self.dodge_direction = None
 
     def shoot_action(self):
         self.set_speed(np.array([0, 0]))
