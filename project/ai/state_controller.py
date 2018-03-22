@@ -8,8 +8,8 @@ class StateController(PathfindController):
     states = None
     current_state = None
 
-    def __init__(self, team, game, type=0, position=None, rotation=None):
-        super(StateController,self).__init__(team,game,type,position,rotation)
+    def __init__(self, team, game, position=None, rotation=None):
+        super(StateController,self).__init__(team,game,position,rotation)
         self.states = {}
         self.initialize_states()
 

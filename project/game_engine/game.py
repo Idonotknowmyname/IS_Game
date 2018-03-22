@@ -10,16 +10,9 @@ from ..sprites.dynamic import Dynamic
 from ..sprites.obstacle import Obstacle
 from ..sprites.collidable import Collidable
 
-from ..ai.ql_controller import DeepQLController
+from ..ai.ql_controller import QLController
 
 class Game:
-
-    # Size of arena
-    ARENA_WIDTH = 600
-    ARENA_HEIGHT = 600
-
-    # List of all game_objects
-    all_game_objects = []
 
     # Dictionary of the game objects for simplifying retrieval
     game_objects_dict = {}
@@ -27,8 +20,6 @@ class Game:
     # Teams of bots
     team_a = []
     team_b = []
-
-    cfg = {}
 
     def __init__(self, n_agents, wind_size, **kwargs):
         self.team_a = []
@@ -163,7 +154,6 @@ class Game:
                     break
                 count += 1
 
-
     def create_bot(self, team, index, **kwargs):
         # If settings for the bots are defined
         if 'bot_settings' in kwargs.keys():
@@ -245,7 +235,7 @@ class Game:
 
     def update_q_learners(self):
         for bot in self.get_game_objects('bot'):
-            if isinstance(bot, DeepQLController):
+            if isinstance(bot, QLController):
                 bot.learn()
 
     # Check is everything is good
@@ -294,26 +284,24 @@ class Game:
                 for obj_2 in self.get_game_objects('collidable'):
                     if obj_1 is not obj_2 and colliding(obj_1, obj_2):
                         res_1 = obj_1.handle_collision(obj_2)
-                        # Remove projectile and store the hit
+                        # Remove projectile and store the hit if a bot was hit
                         if res_1 == -1:
                             self.remove_game_object(obj_1, 'projectile')
-                            self.step_hits[obj_1.shooter] += 1
+                            if isinstance(obj_2, Bot):
+                                self.step_hits[obj_1.shooter] += 1
                         # Push back
                         elif res_1 == 1:
                             normal = get_normal_to_surface(obj_1, obj_2)
                             obj_1.position = obj_1.position + normal
-                            # obj_1.update(-delta_t)
 
                         res_2 = obj_2.handle_collision(obj_1)
-                        # Remove projectile and store the hit
+                        # Remove projectile and store the hit if a bot was hit
                         if res_2 == -1:
                             self.remove_game_object(obj_2, 'projectile')
-                            self.step_hits[obj_2.shooter] += 1
+                            if isinstance(obj_1, Bot):
+                                self.step_hits[obj_2.shooter] += 1
                         elif res_2 == 1:
                             pass
-                            # normal = get_normal_to_surface(obj_2, obj_1)
-                            # obj_2.position = obj_2.position + normal
-                            # obj_2.update(-delta_t)
 
     def is_game_over(self):
         return len(self.team_a) == 0 or len(self.team_b) == 0

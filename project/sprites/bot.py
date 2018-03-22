@@ -22,7 +22,7 @@ class Bot(Dynamic, Collidable):
     MAX_SPEED = 150.
     MAX_ANG_SPEED = 2.
 
-    def __init__(self, team, game, type=0, position=None, rotation=None):
+    def __init__(self, team, game, position=None, rotation=None):
 
         self.BOX_HEIGHT = 2*self.RADIUS
         self.BOX_WIDTH = 2*self.RADIUS

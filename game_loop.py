@@ -9,8 +9,13 @@ from project.ai.test_controller import TestController
 from project.ai.base_controller import BaseController
 from project.ai.pathfind_controller import PathfindController
 from project.ai.state_controller import StateController
-from project.ai.test_ql_controller import TestQLController
+from project.ai.deep_ql_controller import DeepQLController
+
 from time import time
+import os
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 def draw_sprite(display, sprite):
     if isinstance(sprite, Bot):
@@ -80,7 +85,7 @@ controllers = {
     2 : BaseController,
     3 : PathfindController,
     4 : StateController,
-    5 : TestQLController
+    5 : DeepQLController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot

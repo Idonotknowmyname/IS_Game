@@ -16,8 +16,8 @@ class QLController(StateController):
     # Discount factor for future steps
     lam = None
 
-    def __init__(self, team, game, type=0, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000):
-        super(QLController,self).__init__(team,game,type,position,rotation)
+    def __init__(self, team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000):
+        super(QLController,self).__init__(team,game,position,rotation)
         self.eps = eps
         self.lam = lam
         self.memory_size = memory_size
@@ -25,7 +25,7 @@ class QLController(StateController):
         self.init_q_funct()
         self.init_memory()
 
-    # Do not override
+    # No need to override
     def take_action(self):
 
         state = self.get_env_state()
@@ -47,7 +47,7 @@ class QLController(StateController):
         self.execute_action(action)
 
     # This is called in game.update_q_learners() (at the end of the game.time_step(), after the take_action is done)
-    # Do not override
+    # No need to override
     def learn(self):
         reward = self.get_reward()
         new_state = self.get_env_state()
@@ -75,14 +75,15 @@ class QLController(StateController):
 
     # Optional override (already pretty optimized)
     def add_to_memory(self, last_state, last_action, reward, new_state):
+
         self.memory.append((last_state, last_action, reward, new_state))
         if len(self.memory) > self.memory_size:
             self.memory.popleft()
 
     # Optional override
-    def sample_from_memory(self):
+    def sample_from_memory(self, last=False):
         # Sample a random scenario
-        index = np.random.randint(len(self.memory))
+        index = np.random.randint(len(self.memory)) if not last else len(self.memory)-1
 
         return self.memory[index]
 

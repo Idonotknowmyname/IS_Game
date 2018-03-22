@@ -9,8 +9,8 @@ import numpy as np
 
 class BaseController(Bot):
 
-    def __init__(self, team, game, type=0, position=None, rotation=None):
-        super(BaseController, self).__init__(team,game,type,position,rotation)
+    def __init__(self, team, game, position=None, rotation=None):
+        super(BaseController, self).__init__(team,game,position,rotation)
 
     def take_action(self):
         target = self.get_opponents()[0]
@@ -104,3 +104,12 @@ class BaseController(Bot):
                 obstacles.append(obj)
 
         return obstacles
+
+    def get_closest_enemy_projectile(self):
+        enemy_proj = [x for x in self.game.get_game_objects('projectile') if not x.team == self.team]
+        if len(enemy_proj) == 0:
+            return None
+        elif len(enemy_proj) == 1:
+            return enemy_proj[0]
+        else:
+            return sorted(enemy_proj, key=lambda x: np.linalg.norm(self.get_position() - x.get_position()))[0]

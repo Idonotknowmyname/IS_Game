@@ -9,8 +9,8 @@ from time import time
 
 class TestController(Bot):
 
-    def __init__(self, team, game, type=0, position=None, rotation=None):
-        super(TestController, self).__init__(team,game,type,position,rotation)
+    def __init__(self, team, game, position=None, rotation=None):
+        super(TestController, self).__init__(team,game,position,rotation)
 
     def take_action(self):
 
