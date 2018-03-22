@@ -18,8 +18,8 @@ class StateController(PathfindController):
         # Roaming
         self.states["Roam"] = self.roam
 
-        # Choose target
-        self.states["Select"] = self.select
+        # Choose target (not used for now)
+        # self.states["Select"] = self.select
 
         # Search
         self.states["Search"] = self.search

@@ -19,10 +19,11 @@ class Projectile(Dynamic, Collidable):
     RADIUS = 5
     SHAPE = 0
 
-    def __init__(self, position, rotation, team, damage=None):
+    def __init__(self, position, shooter, damage=None):
         self.position = np.array(position)
-        self.rotation = rotation
-        self.team = team
+        self.rotation = shooter.rotation
+        self.team = shooter.team
+        self.shooter = shooter
         self.speed = np.array([0, 1])
         self.ang_speed = 0
         self.damage = self.DAMAGE if damage is None else damage

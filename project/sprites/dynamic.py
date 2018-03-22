@@ -16,7 +16,7 @@ class Dynamic(Sprite):
         self.position[1] += delta_position
 
     def set_speed(self, new_speed):
-        self.speed = new_speed
+        self.speed = np.array(new_speed)
 
     def add_speed_y(self, value):
         self.speed[1] += value

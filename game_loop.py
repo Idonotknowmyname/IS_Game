@@ -9,6 +9,7 @@ from project.ai.test_controller import TestController
 from project.ai.base_controller import BaseController
 from project.ai.pathfind_controller import PathfindController
 from project.ai.state_controller import StateController
+from project.ai.test_ql_controller import TestQLController
 from time import time
 
 def draw_sprite(display, sprite):
@@ -78,13 +79,14 @@ controllers = {
     1 : TestController,
     2 : BaseController,
     3 : PathfindController,
-    4 : StateController
+    4 : StateController,
+    5 : TestQLController
 }
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [4, 4, 4],
-    'b': [4, 4, 4]
+    'a': [0, 5, 0],
+    'b': [0, 0, 0]
 }
 
 # Define colors
@@ -193,7 +195,8 @@ while not crashed and not game.is_game_over():
     last_iter_time = time()
     game.time_step(delta_t)
     time_step_taken = time() - start_physics
-    game.resolve_collisions(delta_t)
+    game.resolve_collisions()
+    game.update_q_learners()
     resolve_time = time() - start_physics - time_step_taken
 
     if print_time:

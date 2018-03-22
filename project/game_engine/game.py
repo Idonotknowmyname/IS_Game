@@ -10,6 +10,8 @@ from ..sprites.dynamic import Dynamic
 from ..sprites.obstacle import Obstacle
 from ..sprites.collidable import Collidable
 
+from ..ai.deepql_controller import DeepQLController
+
 class Game:
 
     # Size of arena
@@ -67,6 +69,9 @@ class Game:
             self.team_b[i].set_position(self.base_b_pos + shift)
             self.team_b[i].set_rotation(-np.pi / 2)
 
+        # Initialize hit count for the bots
+        self.step_hits = {x: 0 for x in self.get_game_objects('bot')}
+
         # Create walls
         wall_thickness = 10
 
@@ -104,6 +109,8 @@ class Game:
                     np.save(path, self.grid)
 
                 self.cell_size = size
+
+
     # Create a graph of the map with the specified coverage of one cell, for pathfinding and such
     def create_grid(self, cell_size):
         graph_height = int(self.window_size[0] / cell_size) + 1
@@ -236,6 +243,11 @@ class Game:
                     # Take action for every bot
                     obj.take_action()
 
+    def update_q_learners(self):
+        for bot in self.get_game_objects('bot'):
+            if isinstance(bot, DeepQLController):
+                bot.learn()
+
     # Check is everything is good
     # NOTE: if a projectile hits 2 or more bots at the exact same game iter, they both lose life
     def resolve_collisions_old(self, delta_t):
@@ -272,15 +284,20 @@ class Game:
 
         # TODO add code for bot elimination
 
-    def resolve_collisions(self, delta_t):
+    def resolve_collisions(self):
+
+        # Initialize the round hit count
+        self.step_hits = {x: 0 for x in self.step_hits.keys()}
+
         for obj_1 in self.get_game_objects('dynamic'):
                 # Check if it is colliding with any collidables
                 for obj_2 in self.get_game_objects('collidable'):
                     if obj_1 is not obj_2 and colliding(obj_1, obj_2):
                         res_1 = obj_1.handle_collision(obj_2)
-                        # Remove projectile
+                        # Remove projectile and store the hit
                         if res_1 == -1:
                             self.remove_game_object(obj_1, 'projectile')
+                            self.step_hits[obj_1.shooter] += 1
                         # Push back
                         elif res_1 == 1:
                             normal = get_normal_to_surface(obj_1, obj_2)
@@ -288,16 +305,15 @@ class Game:
                             # obj_1.update(-delta_t)
 
                         res_2 = obj_2.handle_collision(obj_1)
-                        # Remove projectile
+                        # Remove projectile and store the hit
                         if res_2 == -1:
                             self.remove_game_object(obj_2, 'projectile')
+                            self.step_hits[obj_2.shooter] += 1
                         elif res_2 == 1:
                             pass
                             # normal = get_normal_to_surface(obj_2, obj_1)
                             # obj_2.position = obj_2.position + normal
                             # obj_2.update(-delta_t)
-
-
 
     def is_game_over(self):
         return len(self.team_a) == 0 or len(self.team_b) == 0

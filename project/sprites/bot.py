@@ -63,7 +63,7 @@ class Bot(Dynamic, Collidable):
             bbox = self.get_bbox()
             cannon_pos = (bbox[0] + bbox[-1]) / 2
 
-            self.game.add_game_object(Projectile(cannon_pos, self.rotation, self.team), 'projectile')
+            self.game.add_game_object(Projectile(cannon_pos, self), 'projectile')
 
             self.last_shot_time = time()
 
