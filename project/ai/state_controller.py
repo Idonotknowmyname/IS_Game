@@ -140,6 +140,7 @@ class StateController(PathfindController):
 
         self.check_for_dodge()
 
+    # Just cause
     def dodge(self, direction, bullet_direction):
         print("Dodge")
         self.set_ang_speed(0)
