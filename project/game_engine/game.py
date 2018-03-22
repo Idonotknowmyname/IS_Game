@@ -114,7 +114,6 @@ class Game:
         for projectile in self.get_game_objects("projectile"):
             copy_game.add_projectile(copy(projectile))
 
-        print(len(self.get_game_objects('bot')))
         for bot in self.get_game_objects("bot"):
             copy_bot = copy(bot)
             copy_bot.game = copy_game
