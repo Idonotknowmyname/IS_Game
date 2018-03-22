@@ -31,6 +31,8 @@ class Projectile(Dynamic, Collidable):
         # If damage has already been assigned (no two enemies hit with one shot)
         self.assigned = False
 
+    def __copy__(self):
+        return Projectile(self.position, self.shooter, self.damage)
 
     def handle_collision(self, collidable):
         if isinstance(collidable, Bot) and collidable.team != self.team:

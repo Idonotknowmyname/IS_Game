@@ -53,6 +53,9 @@ class Bot(Dynamic, Collidable):
 
         self.last_shot_time = time()
 
+    def __copy__(self):
+        return Bot(self.team, self.game, self.position.copy(), self.rotation )
+
     def get_opponents(self):
         return self.game.team_b if self.team == 'a' else self.game.team_a
 

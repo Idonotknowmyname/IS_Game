@@ -101,6 +101,24 @@ class Game:
 
                 self.cell_size = size
 
+    # Deepclone for MCTS's
+    def __deepcopy__(self, memodict={}):
+
+        copy_game = Game(n_agents=0, wind_size=self.window_size)
+
+        for projectile in self.get_game_objects("projectile"):
+            copy_game.add_projectile(projectile.copy())
+
+        for bot in self.get_game_objects("bot"):
+            copy_bot = bot.copy()
+            copy_game.add_game_object(copy_bot, "bot")
+            if copy_bot.team == "a":
+                copy_game.team_a.append(copy_bot)
+            else:
+                copy_game.team_b.append(copy_bot)
+
+        return copy_game
+
 
     # Create a graph of the map with the specified coverage of one cell, for pathfinding and such
     def create_grid(self, cell_size):
