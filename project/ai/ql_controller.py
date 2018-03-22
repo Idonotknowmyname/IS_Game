@@ -7,7 +7,7 @@ from .state_controller import StateController
         https://github.com/yenchenlin/DeepLearningFlappyBird/blob/master/README.md
 '''
 
-class DeepQLController(StateController):
+class QLController(StateController):
 
     # Probability of choosing a random action
     # TODO make it as a decreasing function over time
@@ -17,7 +17,7 @@ class DeepQLController(StateController):
     lam = None
 
     def __init__(self, team, game, type=0, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000):
-        super(DeepQLController,self).__init__(team,game,type,position,rotation)
+        super(QLController,self).__init__(team,game,type,position,rotation)
         self.eps = eps
         self.lam = lam
         self.memory_size = memory_size

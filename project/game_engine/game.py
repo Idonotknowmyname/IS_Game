@@ -10,7 +10,7 @@ from ..sprites.dynamic import Dynamic
 from ..sprites.obstacle import Obstacle
 from ..sprites.collidable import Collidable
 
-from ..ai.deepql_controller import DeepQLController
+from ..ai.ql_controller import DeepQLController
 
 class Game:
 

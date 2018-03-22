@@ -1,4 +1,4 @@
-from .deepql_controller import DeepQLController
+from .ql_controller import QLController
 import numpy as np
 
 from keras.models import Sequential
@@ -6,13 +6,13 @@ from keras.layers import Dense, InputLayer
 
 from ..sprites.projectile import Projectile
 
-class TestQLController(DeepQLController):
+class DeepQLController(QLController):
 
     # Available actions
     avail_actions = ['turn_left', 'turn_right', 'move_left', 'move_right', 'move_forw', 'move_back', 'shoot']
 
     # Variables given to the learner
-    state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_x', 'closest_enemy_y', 'is_closest_enemy_visible']
+    state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_x', 'closest_enemy_y', 'is_closest_enemy_visible', 'closest_proj_x']
 
     # Create a basic feedforward neural network
     def init_q_funct(self):
@@ -32,6 +32,15 @@ class TestQLController(DeepQLController):
         model.compile(optimizer='Adam', loss='mse')
 
         self.q_func = model
+
+    # Might not add to memory if reward is == 0
+    def add_to_memory(self, last_state, last_action, reward, new_state):
+        prob = 0.3
+        if reward == 0:
+            if np.random.rand() > prob:
+                super(DeepQLController, self).add_to_memory(last_state, last_action, reward, new_state)
+        else:
+            super(DeepQLController, self).add_to_memory(last_state, last_action, reward, new_state)
 
     def get_reward(self):
 
