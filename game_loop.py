@@ -91,7 +91,7 @@ controllers = {
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
     'a': [0, 4, 0],
-    'b': [0, 0, 0]
+    'b': [0, 4, 0]
 }
 
 # Define colors
