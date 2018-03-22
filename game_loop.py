@@ -3,6 +3,7 @@ import numpy as np
 from keras.models import load_model
 
 from project.ai.cluster_controller import ClusterController
+from project.ai.cluster_coordinator import ClusterCoordinator
 from project.ai.cluster_hive_bot import ClusterHiveBot
 from project.sprites.bot import Bot
 from project.sprites.projectile import Projectile
@@ -96,7 +97,7 @@ controllers = {
 
 insert_bots = []
 
-hive_mind = [(ClusterController, "a")]
+hive_mind = [(ClusterCoordinator, "a")]
 
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
