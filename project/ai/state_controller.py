@@ -39,10 +39,17 @@ class StateController(PathfindController):
         self.states["Dodge"] = self.dodge
 
         self.current_state = "Roam"
+        self.last_state = None
 
     def take_action(self):
 
         self.states[self.current_state]()
+
+        if not self.current_state == self.last_state:
+            pass
+            # print('State transition! From {} to {}'.format(self.last_state, self.current_state))
+
+        self.last_state = self.current_state
 
     def check_for_dodge(self):
 
@@ -182,7 +189,7 @@ class StateController(PathfindController):
         self.set_speed(np.array([0, 0]))
 
         if self.target is not None and self.rotate_towards(self.target):
-            #self.shoot()
+            self.shoot()
             pass
 
         elif self.target is not None and isinstance(self.target, Bot):

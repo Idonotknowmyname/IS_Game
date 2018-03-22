@@ -32,7 +32,7 @@ class BaseController(Bot):
         diff_rotation = (direction - self.rotation) % (np.pi * 2)
 
         # Minimum deviation
-        eps = np.pi/128
+        eps = np.pi/64
 
         if min(abs((np.pi * 2 - diff_rotation) % (np.pi * 2)), abs(diff_rotation)) < eps:
             self.ang_speed = 0

@@ -10,7 +10,7 @@ def colliding(obj_1, obj_2):
     shape_1 = obj_1.SHAPE
     shape_2 = obj_2.SHAPE
 
-    dist = np.sqrt(np.dot((obj_1.get_position() - obj_2.get_position()), (obj_1.get_position() - obj_2.get_position())))
+    dist = np.linalg.norm(obj_1.get_position() - obj_2.get_position())
 
     # Both circles
     if shape_1 == 0 and shape_2 == 0:

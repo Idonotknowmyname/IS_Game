@@ -16,15 +16,13 @@ class DeepQLController(QLController):
 
     # Variables given to the learner
     state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_x', 'closest_enemy_y', 'is_closest_enemy_visible',
-                  'closest_proj_x', 'closest_proj_y', 'closest_proj_dot']
+                  'closest_proj_x', 'closest_proj_y', 'closest_proj_dot', 'obs_in_front', 'obs_on_right', 'obs_on_left']
 
     def __init__(self, team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000, model=None):
         super(DeepQLController, self).__init__(team, game, position=None, rotation=None, eps=0.3, lam=0.9, memory_size=5000)
 
-        self.time_last_big_training = time()
-
         if model is not None:
-            self.model = model
+            self.q_func = model
 
     # Create a basic feedforward neural network
     def init_q_funct(self):

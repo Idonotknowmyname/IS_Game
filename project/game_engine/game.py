@@ -46,7 +46,7 @@ class Game:
         # Distribute the bots based on the number and teams
         self.base_a_pos = np.array([50, height/2])
         self.base_b_pos = np.array([width-50, height/2])
-        dist = self.team_a[0].RADIUS * 2 + 50
+        dist = self.team_a[0].RADIUS * 2 + 150
 
         # Team a
         length = len(self.team_a)

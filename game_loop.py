@@ -12,6 +12,7 @@ from project.ai.base_controller import BaseController
 from project.ai.pathfind_controller import PathfindController
 from project.ai.state_controller import StateController
 from project.ai.deep_ql_controller import DeepQLController
+from project.ai.trained_dql_controller import TrainedDQLController
 
 from time import time
 import os
@@ -68,7 +69,7 @@ pg.font.init()
 # Define display size (approx. same as arena size) and frames per second of game
 display_height = 800
 display_width = 1600
-fps = 50
+fps = 30
 physics_refresh_rate = 1.8/fps
 
 # Already precomputed values = (5, 10, 15)
@@ -90,16 +91,21 @@ controllers = {
     5 : DeepQLController
 }
 
-bot_1 = DeepQLController(None, None, model=load_model('deep_q_models/test_1_FFNN (60 episodes).h5'))
-bot_2 = DeepQLController(None, None, model=load_model('deep_q_models/test_2_FFNN (60 episodes).h5'))
+bot_1 = DeepQLController(None, None, model=load_model('deep_q_models/FFNN_on_sController_1(3 layers).h5'), eps=0)
+bot_2 = DeepQLController(None, None, model=load_model('deep_q_models/FFNN_on_sController_2(3 layers).h5'), eps=0)
 
-insert_bots = [(bot_1, 'a', 1), (bot_2, 'b', 1)]
+#bot_1 = TrainedDQLController(None, None)
+
+# bot_2 = TrainedDQLController(None, None)
+
+insert_bots = [(bot_1, 'a', 0), (bot_2, 'b', 0)]
+insert_bots = []
 
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 4, 0],
-    'b': [0, 0, 0]
+    'a': [0],
+    'b': [0]
 }
 
 # Define colors
@@ -130,7 +136,7 @@ crashed = False
 
 # Init game
 game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
-            controllers=controllers, grid_path=grid_path)
+            controllers=controllers, grid_path=grid_path, insert_bots=insert_bots)
 
 last_iter_time = time()
 
@@ -209,7 +215,6 @@ while not crashed and not game.is_game_over():
     game.time_step(delta_t)
     time_step_taken = time() - start_physics
     game.resolve_collisions()
-    game.update_q_learners()
     resolve_time = time() - start_physics - time_step_taken
 
     if print_time:

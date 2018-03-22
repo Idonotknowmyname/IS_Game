@@ -1,16 +1,23 @@
 from time import time
+import pygame as pg
 import numpy as np
 import os
 from keras.models import load_model
+import matplotlib.pyplot as plt
+from scipy.signal import gaussian
 
 from project.game_engine.game import Game
 
 from project.sprites.bot import Bot
+from project.sprites.projectile import Projectile
+from project.sprites.obstacle import Obstacle
+
 from project.ai.deep_ql_controller import DeepQLController
 from project.ai.base_controller import BaseController
 from project.ai.pathfind_controller import PathfindController
 from project.ai.state_controller import StateController
 from project.ai.test_controller import TestController
+from project.ai.trained_dql_controller import TrainedDQLController
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -60,30 +67,94 @@ def get_rand_bot_settings(probs=None, avail_opts=None):
 
     return {'a': team_a_sett, 'b': team_b_sett}
 
-# Update timestep
-delta_t = 1/30
+def draw_sprite(display, sprite):
+    if isinstance(sprite, Bot):
 
-episodes = 30
+        position = sprite.get_position().copy()
+        position[1] = display_height - position[1]
 
-# Max number of seconds an episode can last
-max_episode_length = 100
+        # Draw the shape
+        pg.draw.circle(game_display, team_colors[sprite.team], position.astype(int), sprite.RADIUS)
 
-model_1 = load_model('deep_q_models/test_1_FFNN (30 episodes).h5')
-bot_1 = DeepQLController(None, None, model=model_1)
+        # Draw inner shape (based on health)
+        color = (sprite.health / sprite.MAX_HEALTH) * 255
+        pg.draw.circle(game_display, (0,color,0), position.astype(int), sprite.RADIUS - 5)
 
-model_2 = load_model('deep_q_models/test_2_FFNN (30 episodes).h5')
-bot_2 = DeepQLController(None, None, model=model_2)
+        # Write health
+        health_label = health_font.render("{}".format(sprite.health),
+                                            0,
+                                           black)
+        game_display.blit(health_label,position - np.array([17,10]))
 
-insert_bots = [(bot_1, 'a', 1), (bot_2, 'b', 1)]
+        # Draw the cannon
+        sprite_bbox = sprite.get_bbox()
+        cannon_center = (sprite_bbox[0] + sprite_bbox[-1])/2
+        cannon_center[1] = display_height - cannon_center[1]
+        pg.draw.circle(game_display, black, cannon_center.astype(int), 5)
+    elif type(sprite) == Projectile:
+        position = sprite.get_position().copy()
+        position[1] = display_height - position[1]
+
+        pg.draw.circle(game_display, projectile_col, position.astype(int), sprite.RADIUS)
+    elif type(sprite) == Obstacle:
+        vertices = sprite.get_bbox()
+        vertices[:, 1] = display_height - vertices[:, 1]
+        pg.draw.polygon(game_display, obstacle_col, vertices, 0)
+
 
 display_height = 800
 display_width = 1600
+
+spectate = False
+
+if spectate:
+    pg.init()
+    pg.font.init()
+
+    # Define colors
+    black = (0,0,0)
+    background_col = (255, 255, 255)
+    obstacle_col = (0, 204, 0)
+    projectile_col = (0,0,0)
+
+    team_colors = {
+        'a': (255,0,0), # Red
+        'b': (0,0,255) # Blue
+    }
+
+    white = (255,255,255)
+    red = (255,0,0)
+    green = (0,255,0)
+    blue = (0,0,255)
+
+    default_font = pg.font.get_default_font()
+    health_font = pg.font.Font(default_font, 20)
+
+    # Init window and window params
+    game_display = pg.display.set_mode((display_width,display_height))
+    pg.display.set_caption('A test game')
+    clock = pg.time.Clock()
+
+
+# Update timestep
+delta_t = 1/30
+
+episodes = 60
+
+# Max number of seconds an episode can last
+max_episode_length = 60
+
+bot_1 = TrainedDQLController(None, None)
+
+bot_2 = TrainedDQLController(None, None)
+
+insert_bots = [(bot_1, 'a', 0), (bot_2, 'b', 0)]
 
 # Already precomputed values = (5, 10, 15)
 grid_path = 15
 
 # Number of agents per team
-n_agents = 3
+n_agents = 1
 
 # Define bot controllers
 controllers = {
@@ -100,10 +171,7 @@ log_every_n_seconds = 10
 
 for i in range(episodes):
 
-    bot_1.init_memory()
-    bot_2.init_memory()
-
-    bot_settings = get_rand_bot_settings(probs=[0, 0.6, 0.4])
+    bot_settings = {'a': [1], 'b': [1]}
 
     # Init game
     game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
@@ -122,13 +190,11 @@ for i in range(episodes):
 
         # Update game
         start_physics = time()
-        if not game.is_game_over():
-            game.time_step(delta_t)
+        game.time_step(delta_t)
         time_step_taken = time() - start_physics
         game.resolve_collisions()
         resolve_time = time() - start_physics - time_step_taken
-        if not game.is_game_over():
-            game.update_q_learners()
+        game.update_q_learners()
         q_learner_time = time() - start_physics - time_step_taken - resolve_time
 
         if print_time:
@@ -150,6 +216,20 @@ for i in range(episodes):
 
             last_iter_time = time()
 
+        if spectate:
+            # Draw objects
+            game_display.fill(background_col)
+
+            # draw_grid_path(game, grid_path)
+
+            for sprite in game.get_game_objects('sprite'):
+                draw_sprite(game_display, sprite)
+
+            start_update = time()
+            pg.display.update()
+            clock.tick(1/delta_t)
+
+
         # Update the shots hit
         tot_shots_hit[bot_1] += game.step_hits[bot_1]
         tot_shots_hit[bot_2] += game.step_hits[bot_2]
@@ -160,6 +240,15 @@ for i in range(episodes):
     print_with_time('Episode {} has ended! The first bot hit {} shots, the second bot hit {} shots'
                     .format(i, tot_shots_hit[bot_1], tot_shots_hit[bot_2]))
 
+bot_1.save_model('FFNN_on_sController_1(3 layers)')
+bot_2.save_model('FFNN_on_sController_2(3 layers)')
 
-bot_1.save_model('test_1_FFNN (60 episodes)')
-bot_2.save_model('test_2_FFNN (60 episodes)')
+train_err_1 = np.convolve(bot_1.train_err, gaussian(10, 1))
+train_err_2 = np.convolve(bot_2.train_err, gaussian(10, 1))
+
+
+plt.plot(train_err_1, label='Bot 1 training error')
+plt.plot(train_err_2, label='Bot 2 training error')
+
+plt.legend()
+plt.show()
