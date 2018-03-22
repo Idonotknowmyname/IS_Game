@@ -65,10 +65,12 @@ class StateController(PathfindController):
             dot2 = bullet_direction.dot(bullet_to_h2)
 
             if np.sign(dot1) != np.sign(dot2):
-                self.current_state = self.states["Dodge"]
+                self.set_ang_speed(0)
                 if np.abs(dot1) > np.abs(dot2):
+                    self.current_state = lambda: self.states["Dodge"](h1, bot_to_bullet)
                     self.set_speed([1,0])
                 else:
+                    self.current_state = lambda: self.states["Dodge"](h2, bot_to_bullet)
                     self.set_speed([-1,0])
                 return
 
@@ -124,12 +126,26 @@ class StateController(PathfindController):
             self.target = None
             self.path_to_target = None
 
-    def dodge(self):
-        pass
+    def dodge(self, direction, bullet_direction):
+
+        self.set_ang_speed(0)
+
+        dodge_location = self.get_position() + direction
+        rot_mat = get_rot_mat(-self.get_rotation())
+
+        # Get the direction w.r.t. current rotation, normalized
+        dodge_direction = np.asarray(direction * rot_mat).flatten() / np.linalg.norm(direction)
+
+        if self.game.grid[self.get_grid_node(dodge_location)]:
+            self.set_speed(dodge_direction)
+        elif self.game.grid[self.get_grid_node(-dodge_location)]:
+            self.set_speed(-dodge_direction)
+        else:
+            backing_direction = np.asarray(bullet_direction * rot_mat).flatten() / np.linalg.norm(bullet_direction)
+            self.set_speed(backing_direction)
 
     def shoot_action(self):
-        print("Shooting")
         if self.target is not None and self.rotate_towards(self.target):
             self.set_speed(np.array([0, 0]))
-            #self.shoot()
+            self.shoot()
 
