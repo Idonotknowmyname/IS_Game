@@ -87,6 +87,9 @@ class QLController(StateController):
 
         return self.memory[index]
 
+    def get_bot_type(self):
+        return 'Base QL Controller'
+
     # All the following methods are to be overridden
 
     def init_q_funct(self):

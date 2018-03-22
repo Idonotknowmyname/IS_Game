@@ -173,6 +173,16 @@ class Game:
                 count += 1
 
     def create_bot(self, team, index, **kwargs):
+        # If some bots are passed from outside
+        if 'insert_bots' in kwargs.keys() and kwargs:
+            for new_bot, bot_team, bot_index in kwargs['insert_bots']:
+                if index == bot_index and team == bot_team:
+                    new_bot.game = self
+                    new_bot.team = bot_team
+                    new_bot.health = new_bot.MAX_HEALTH
+                    self.add_game_object(new_bot, 'bot')
+                    return new_bot
+
         # If settings for the bots are defined
         if 'bot_settings' in kwargs.keys():
             settings = kwargs['bot_settings']
@@ -245,9 +255,7 @@ class Game:
             obj.update(delta_t)
 
             if isinstance(obj, Bot):
-                if obj.health <= 0:
-                    self.remove_game_object(obj, 'bot')
-                else:
+                if obj.health > 0:
                     # Take action for every bot
                     obj.take_action()
 
@@ -320,6 +328,11 @@ class Game:
                                 self.step_hits[obj_2.shooter] += 1
                         elif res_2 == 1:
                             pass
+
+        # Remove dead bots
+        for bot in self.get_game_objects('bot'):
+            if bot.health <= 0:
+                self.remove_game_object(bot, 'bot')
 
     def is_game_over(self):
         return len(self.team_a) == 0 or len(self.team_b) == 0

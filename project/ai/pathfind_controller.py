@@ -16,7 +16,9 @@ class PathfindController(BaseController):
 
     def take_action(self):
 
-        self.target = self.get_opponents()[0]
+        if self.target is None or self.target.health <= 0:
+            self.target = np.random.choice(self.get_opponents())
+
         target = self.target
 
         if self.is_target_visible(target):
@@ -110,6 +112,8 @@ class PathfindController(BaseController):
         if mode == 'eucl':
             return np.linalg.norm((tar_x - curr_x, tar_y - curr_y))
 
+    def get_bot_type(self):
+        return 'Pathfind Controller'
 
     def get_grid_node(self, position):
         size = self.game.cell_size

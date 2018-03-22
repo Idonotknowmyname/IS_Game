@@ -74,6 +74,9 @@ class Bot(Dynamic, Collidable):
     def take_action(self):
         pass
 
+    def get_bot_type(self):
+        return 'Base Bot'
+
     def handle_collision(self, collidable):
         if isinstance(collidable, Bot):
             return 1

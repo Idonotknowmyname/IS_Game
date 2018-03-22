@@ -17,6 +17,12 @@ class DeepQLController(QLController):
     state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_x', 'closest_enemy_y', 'is_closest_enemy_visible',
                   'closest_proj_x', 'closest_proj_y', 'closest_proj_dot']
 
+    def __init__(self, team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000, model=None):
+        super(DeepQLController, self).__init__(team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000)
+
+        if model is not None:
+            self.model = model
+
     # Create a basic feedforward neural network
     def init_q_funct(self):
         # Number of network inputs
@@ -119,6 +125,9 @@ class DeepQLController(QLController):
 
         return state
 
+    def get_bot_type(self):
+        return 'Deep QL Controller'
+
     def update_q_func(self, state, action, target):
         # Get what the other action values should be
         q_vals = self.get_q_val(state, None)
@@ -163,3 +172,6 @@ class DeepQLController(QLController):
 
     def get_q_val(self, state, actions):
         return self.q_func.predict(np.reshape(state, (1, len(state))))
+
+    def save_model(self, name):
+        self.q_func.save('deep_q_models/{}.h5'.format(name))

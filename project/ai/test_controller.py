@@ -74,10 +74,6 @@ class TestController(Bot):
         if dodge_direction != 0:
             self.set_speed([dodge_direction, 0])
 
-        print('Total time for take_action = {}\nTotal setup time = {}\nFind obstacle list time = {}\nTotal calculation time = {}\nTotal avoiding time '
-              '= {}'.format(time() - start, setup_time, find_obs_list_time, calc_time, avoiding_time))
-        print()
-
 
     def obstacles_on_path(self, target):
         # Create a very thin rectangular obstacle (line between bots) and check its collisions
@@ -175,3 +171,5 @@ class TestController(Bot):
         print(np.dot(bullet_norm_vec, bullet_loc_vec))
         return np.sign(np.dot(bullet_norm_vec, bullet_loc_vec))
 
+    def get_bot_type(self):
+        return 'Test Controller'

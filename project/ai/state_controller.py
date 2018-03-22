@@ -77,6 +77,9 @@ class StateController(PathfindController):
         else:
             self.follow_path()
 
+    def get_bot_type(self):
+        return 'State Controller'
+
     def search(self):
         if not self.is_path_removable():
             self.follow_path()

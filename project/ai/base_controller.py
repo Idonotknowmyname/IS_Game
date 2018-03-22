@@ -105,6 +105,9 @@ class BaseController(Bot):
 
         return obstacles
 
+    def get_bot_type(self):
+        return 'Base Controller'
+
     def get_closest_enemy_projectile(self):
         enemy_proj = [x for x in self.game.get_game_objects('projectile') if not x.team == self.team]
         if len(enemy_proj) == 0:
