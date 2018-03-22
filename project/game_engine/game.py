@@ -40,6 +40,11 @@ class Game:
         else:
             assert False, 'Bad number of bot given! It has to be of types list or int'
 
+        if "hive_mind" in kwargs.keys():
+            for hive_mind, team in kwargs["hive_mind"]:
+                new_controller = hive_mind(self,team)
+                self.add_game_object(new_controller, "hive_mind")
+
         height = wind_size[0]
         width = wind_size[1]
 
@@ -90,18 +95,18 @@ class Game:
 
         # If specified, create grid of map with spaces where bot can go
         if 'grid_path' in kwargs.keys():
-                size = kwargs['grid_path']
-                assert type(size) == int
+            size = kwargs['grid_path']
+            assert type(size) == int
 
-                path = 'map_grid/{}.npy'.format(size)
+            path = 'map_grid/{}.npy'.format(size)
 
-                if os.path.isfile(path):
-                    self.grid = np.load(path)
-                else:
-                    self.grid = self.create_grid(kwargs['grid_path'])
-                    np.save(path, self.grid)
+            if os.path.isfile(path):
+                self.grid = np.load(path)
+            else:
+                self.grid = self.create_grid(kwargs['grid_path'])
+                np.save(path, self.grid)
 
-                self.cell_size = size
+            self.cell_size = size
 
     # Deepclone for MCTS's
     def __deepcopy__(self, memodict={}):
@@ -179,6 +184,14 @@ class Game:
                 count += 1
 
     def create_bot(self, team, index, **kwargs):
+
+        if "hive_mind" in kwargs.keys():
+            for _, hive_team in kwargs["hive_mind"]:
+                if hive_team == team:
+                    new_bot = kwargs["controllers"][10](team, self)
+                    self.add_game_object(new_bot, "bot")
+                    return new_bot
+
         # If some bots are passed from outside
         if 'insert_bots' in kwargs.keys() and kwargs:
             for new_bot, bot_team, bot_index in kwargs['insert_bots']:
@@ -256,6 +269,10 @@ class Game:
         return objects
 
     def time_step(self, delta_t):
+
+        for controller in self.get_game_objects("hive_mind"):
+            controller.command()
+
         for obj in self.get_game_objects('dynamic'):
             # Update position based on speed
             obj.update(delta_t)

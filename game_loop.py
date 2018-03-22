@@ -2,6 +2,8 @@ import pygame as pg
 import numpy as np
 from keras.models import load_model
 
+from project.ai.cluster_controller import ClusterController
+from project.ai.cluster_hive_bot import ClusterHiveBot
 from project.sprites.bot import Bot
 from project.sprites.projectile import Projectile
 from project.sprites.obstacle import Obstacle
@@ -88,24 +90,19 @@ controllers = {
     2 : BaseController,
     3 : PathfindController,
     4 : StateController,
-    5 : DeepQLController
+    5 : DeepQLController,
+    10 : ClusterHiveBot
 }
 
-bot_1 = DeepQLController(None, None, model=load_model('deep_q_models/FFNN_on_sController_1(3 layers).h5'), eps=0)
-bot_2 = DeepQLController(None, None, model=load_model('deep_q_models/FFNN_on_sController_2(3 layers).h5'), eps=0)
-
-#bot_1 = TrainedDQLController(None, None)
-
-# bot_2 = TrainedDQLController(None, None)
-
-insert_bots = [(bot_1, 'a', 0), (bot_2, 'b', 0)]
 insert_bots = []
+
+hive_mind = [(ClusterController, "a")]
 
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
     'a': [0],
-    'b': [0]
+    'b': [4]
 }
 
 # Define colors
@@ -136,7 +133,7 @@ crashed = False
 
 # Init game
 game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
-            controllers=controllers, grid_path=grid_path, insert_bots=insert_bots)
+            controllers=controllers, grid_path=grid_path, insert_bots=insert_bots, hive_mind=hive_mind)
 
 last_iter_time = time()
 

@@ -35,6 +35,7 @@ class ClusterHiveBot(PathfindController):
         # Wait
         self.states["Wait"] = self.wait
 
+        self.current_state = "Wait"
         self.last_state = None
 
     def take_action(self):
@@ -131,6 +132,7 @@ class ClusterHiveBot(PathfindController):
             self.dodge_direction = None
 
     def shoot_action(self):
+        self.path_to_target = None
         self.set_speed(np.array([0, 0]))
 
         if self.target is not None and self.rotate_towards(self.target):
