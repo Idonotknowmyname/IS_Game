@@ -66,14 +66,13 @@ class StateController(PathfindController):
                 self.set_ang_speed(0)
                 if np.abs(dot1) > np.abs(dot2):
                     self.states["Dodge"] = lambda: self.dodge(h1,bot_to_bullet)
-                    self.current_state = "Dodge"
                 else:
                     self.states["Dodge"] = lambda: self.dodge(h2,bot_to_bullet)
-                    self.current_state = "Dodge"
-                return
+                return True
+
+        return False
 
     def roam(self):
-        print("Roaming")
         # Check if an opponent is visible for state change
         opponents = list(filter(lambda x: self.is_target_visible(x), self.get_opponents()))
         if len(opponents) > 0:
@@ -111,13 +110,13 @@ class StateController(PathfindController):
         else:
             self.follow_path()
 
-        self.check_for_dodge()
+        if self.check_for_dodge():
+            self.current_state = "Dodge"
 
     def get_bot_type(self):
         return 'State Controller'
 
     def search(self):
-        print("Searching")
         # Check if an opponent is visible for state change
         opponents = list(filter(lambda x: self.is_target_visible(x), self.get_opponents()))
         if len(opponents) > 0:
@@ -138,43 +137,58 @@ class StateController(PathfindController):
             self.path_to_target = None
             self.current_state = "Roam"
 
-        self.check_for_dodge()
+        if self.check_for_dodge():
+            self.current_state = "Dodge"
 
-    # Just cause
     def dodge(self, direction, bullet_direction):
-        print("Dodge")
         self.set_ang_speed(0)
 
-        dodge_location = self.get_position() + direction
         rot_mat = get_rot_mat(-self.get_rotation())
+
+        can_move_to_direction = True
+        for i in range(5):
+            if not self.game.grid[self.get_grid_node(self.get_position() + (i / 5) * direction)]:
+                can_move_to_direction = False
+
+        move_to_inverse_direction = True
+        for i in range(5):
+            if not self.game.grid[self.get_grid_node(self.get_position() + (i / 5) * -direction)]:
+                move_to_inverse_direction = False
 
         # Get the direction w.r.t. current rotation, normalized
         dodge_direction = np.asarray(direction * rot_mat).flatten() / np.linalg.norm(direction)
 
-        can_move_to_direction = True
-
-        if self.game.grid[self.get_grid_node(dodge_location)]:
+        if can_move_to_direction:
             self.set_speed(dodge_direction)
-        elif self.game.grid[self.get_grid_node(-dodge_location)]:
+        elif move_to_inverse_direction:
+            print("Moving to inverse")
             self.set_speed(-dodge_direction)
         else:
+            print("Backing")
             backing_direction = np.asarray(bullet_direction * rot_mat).flatten() / np.linalg.norm(bullet_direction)
             self.set_speed(backing_direction)
 
+        if not self.check_for_dodge():
+            self.current_state = "Roam"
+
     def shoot_action(self):
-        print("Shoting")
+        self.set_speed(np.array([0, 0]))
+
         if self.target is not None and self.rotate_towards(self.target):
-            self.set_speed(np.array([0, 0]))
-            self.shoot()
+            #self.shoot()
+            pass
 
-        # NOTE: Doesn't work as intended
         elif self.target is not None and isinstance(self.target, Bot):
-            self.target = Point(self.target.get_position())
-            self.path_to_target = self.pathfind(self.target)
-            self.current_state = "Search"
+            if not self.is_target_visible(self.target):
+                self.target = Point(self.target.get_position())
+                self.path_to_target = self.pathfind(self.target)
+                self.current_state = "Search"
+            else:
+                self.rotate_towards(self.target)
 
-        if isinstance(self.target, Bot) and self.target.health <= 0:
+        if self.target is not None and isinstance(self.target, Bot) and self.target.health <= 0:
             self.target = None
             self.current_state = "Roam"
 
-        self.check_for_dodge()
+        if self.check_for_dodge():
+            self.current_state = "Dodge"

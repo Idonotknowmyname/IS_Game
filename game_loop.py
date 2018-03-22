@@ -98,8 +98,8 @@ insert_bots = [(bot_1, 'a', 1), (bot_2, 'b', 1)]
 # Define what controllers should be used for each bot
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
-    'a': [0, 5, 0],
-    'b': [0, 5, 0]
+    'a': [0, 4, 0],
+    'b': [0, 0, 0]
 }
 
 # Define colors
