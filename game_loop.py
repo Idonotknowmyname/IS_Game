@@ -70,7 +70,7 @@ fps = 50
 physics_refresh_rate = 1.8/fps
 
 # Already precomputed values = (5, 10, 15)
-grid_path = 15
+tile_size = 15
 
 # Number of agents per team
 n_agents = 3
@@ -91,7 +91,7 @@ controllers = {
 # key is team name ('a', 'b'), value is array of controller id for each bot
 bot_settings = {
     'a': [0, 4, 0],
-    'b': [0, 4, 0]
+    'b': [0, 0, 0]
 }
 
 # Define colors
@@ -122,7 +122,7 @@ crashed = False
 
 # Init game
 game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
-            controllers=controllers, grid_path=grid_path)
+            controllers=controllers, grid_path=tile_size)
 
 last_iter_time = time()
 
