@@ -139,7 +139,7 @@ if spectate:
 # Update timestep
 delta_t = 1/30
 
-episodes = 60
+episodes = 120
 
 # Max number of seconds an episode can last
 max_episode_length = 60
@@ -154,7 +154,7 @@ insert_bots = [(bot_1, 'a', 0), (bot_2, 'b', 0)]
 grid_path = 15
 
 # Number of agents per team
-n_agents = 1
+n_agents = 2
 
 # Define bot controllers
 controllers = {
@@ -169,9 +169,12 @@ controllers = {
 print_time = False
 log_every_n_seconds = 10
 
+losses_bot_1 = []
+losses_bot_2 = []
+
 for i in range(episodes):
 
-    bot_settings = {'a': [1], 'b': [1]}
+    bot_settings = get_rand_bot_settings(probs=[0.3, 0.7], avail_opts=[3, 4])
 
     # Init game
     game = Game(n_agents=n_agents, wind_size=[display_height, display_width], bot_settings=bot_settings,
@@ -180,7 +183,10 @@ for i in range(episodes):
     print_with_time('Starting episode {}, team a = {}, team b = {}'.format(i, bot_settings['a'], bot_settings['b']))
 
     last_iter_time = time()
-    tot_shots_hit = {bot_1: 0, bot_2: 0}
+    tot_shots_hit = {bot_1.id: 0, bot_2.id: 0}
+    bot_1.train_err = []
+    bot_2.train_err = []
+
     episode_start = time()
     iter_count = 0
 
@@ -231,24 +237,27 @@ for i in range(episodes):
 
 
         # Update the shots hit
-        tot_shots_hit[bot_1] += game.step_hits[bot_1]
-        tot_shots_hit[bot_2] += game.step_hits[bot_2]
+        tot_shots_hit[bot_1.id] += game.step_hits[bot_1]
+        tot_shots_hit[bot_2.id] += game.step_hits[bot_2]
 
         iter_count += 1
 
+    losses_bot_1.append(np.mean(bot_1.train_err))
+    losses_bot_2.append(np.mean(bot_1.train_err))
 
     print_with_time('Episode {} has ended! The first bot hit {} shots, the second bot hit {} shots'
-                    .format(i, tot_shots_hit[bot_1], tot_shots_hit[bot_2]))
+                    .format(i, tot_shots_hit[bot_1.id], tot_shots_hit[bot_2.id]))
 
 bot_1.save_model('FFNN_on_sController_1(3 layers)')
 bot_2.save_model('FFNN_on_sController_2(3 layers)')
 
-train_err_1 = np.convolve(bot_1.train_err, gaussian(10, 1))
-train_err_2 = np.convolve(bot_2.train_err, gaussian(10, 1))
 
+plt.plot(losses_bot_1, label='Bot 1 training error')
+plt.figure()
+plt.plot(losses_bot_1, label='Bot 2 training error')
 
-plt.plot(train_err_1, label='Bot 1 training error')
-plt.plot(train_err_2, label='Bot 2 training error')
+np.save('deep_q_models/train_loss_bot_1', losses_bot_1)
+np.save('deep_q_models/train_loss_bot_2', losses_bot_2)
 
 plt.legend()
 plt.show()

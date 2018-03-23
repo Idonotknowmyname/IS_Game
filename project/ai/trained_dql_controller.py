@@ -5,6 +5,10 @@ from keras.models import Sequential
 
 from .state_controller import StateController
 from .deep_ql_controller import DeepQLController
+
+from ..sprites.obstacle import Obstacle
+from ..sprites.point import Point
+
 from ..utils.utils import get_rot_mat
 
 class TrainedDQLController(StateController):
@@ -110,10 +114,27 @@ class TrainedDQLController(StateController):
             proj_dot = np.dot(proj_speed, dir_vec / np.linalg.norm(dir_vec))/2 + 0.5
 
         # Get obstacles around
-        # Create an obstacle in
+        # Create a point in front, one on the right and one on the left
 
+        rel_pos_front = np.array([0, self.RADIUS * 4])
+        rel_pos_right = np.array([self.RADIUS * 4, 0])
+        rel_pos_left = np.array([-self.RADIUS * 4, 0])
 
-        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot])
+        all_pos = np.vstack([rel_pos_front, rel_pos_right, rel_pos_left])
+
+        rel_rot_pos = np.asarray(all_pos * get_rot_mat(self.get_rotation()))
+
+        point_front = Point(self.get_position() + rel_rot_pos[0, :])
+        point_right = Point(self.get_position() + rel_rot_pos[1, :])
+        point_left = Point(self.get_position() + rel_rot_pos[2, :])
+
+        obs_front = 1 if self.game.collides_with(point_front, 'obstacle') else 0
+
+        obs_right = 1 if self.game.collides_with(point_right, 'obstacle') else 0
+
+        obs_left = 1 if self.game.collides_with(point_left, 'obstacle') else 0
+
+        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot, obs_front, obs_right, obs_left])
 
         return state
 

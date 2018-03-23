@@ -3,6 +3,7 @@ from ..sprites.obstacle import Obstacle
 from ..utils.utils import colliding
 from ..utils.utils import get_rot_mat
 from ..sprites.projectile import Projectile
+from ..sprites.point import Point
 
 import numpy as np
 from time import time
@@ -14,65 +15,27 @@ class TestController(Bot):
 
     def take_action(self):
 
-        start = time()
+        # Put point in front and check for collisions with obstacles
+        rel_pos_front = np.array([0, self.RADIUS * 4])
+        rel_pos_right = np.array([self.RADIUS * 4, 0])
+        rel_pos_left = np.array([-self.RADIUS * 4, 0])
 
-        #Get the first bot from enemy team
-        opponents = self.game.team_b if self.team == 'a' else self.game.team_a
+        all_pos = np.vstack([rel_pos_front, rel_pos_right, rel_pos_left])
 
-        #Choose first opponen as target
-        target = opponents[0]
+        rel_rot_pos = np.asarray(all_pos * get_rot_mat(self.get_rotation()))
 
-        #parameters for the target location
-        distance_vec = target.position - self.position
-        direction = np.arctan2(distance_vec[1],distance_vec[0])
-        direction = (-direction + np.pi / 2) % (np.pi * 2)
-        distance = np.linalg.norm(distance_vec)
+        point_front = Point(self.get_position() + rel_rot_pos[0,:])
+        point_right = Point(self.get_position() + rel_rot_pos[1,:])
+        point_left = Point(self.get_position() + rel_rot_pos[2,:])
 
-        # Match rotation
-        diff_rotation = (direction-self.rotation) % (np.pi*2)
+        if self.game.collides_with(point_front, 'obstacle'):
+            print('I am colliding in front!')
 
-        if abs(diff_rotation) < abs((np.pi*2 - diff_rotation) % (np.pi*2)):
-            self.ang_speed = np.sign(diff_rotation)
-        else:
-            self.ang_speed = -np.sign(diff_rotation)
+        if self.game.collides_with(point_right, 'obstacle'):
+            print('I am colliding on the right!')
 
-        setup_time = time() - start
-
-        # Shoot only if sight is clear
-        obstacle_list = self.obstacles_on_path(target)
-
-        find_obs_list_time = time() - start - setup_time
-
-        if len(obstacle_list) == 0:
-            self.set_speed([0,0])
-            # self.shoot()
-        else:
-            # Find the closest obstacle to avoid
-            obstacle_list = sorted(obstacle_list, key = lambda x:
-            np.linalg.norm(x.position - self.position))
-            first_obstacle = obstacle_list[0]
-
-            # Normalize vectors
-            norm_distance_vec = distance_vec/distance
-            rot_matrix_90 = get_rot_mat(np.pi/2)
-            norm_obstacle_vec = (first_obstacle.position-self.position)/np.linalg.norm(first_obstacle.position-self.position)
-            norm_obstacle_vec = np.asarray(norm_obstacle_vec * rot_matrix_90).flatten()
-
-            # Decide avoidance direction
-            if np.dot(norm_distance_vec,norm_obstacle_vec) > 0:
-                self.set_speed([1, 0])
-            else:
-                self.set_speed([-1,0])
-
-        calc_time = time() - start - setup_time - find_obs_list_time
-
-        # Avoid incoming bullets
-        dodge_direction = self.avoid_bullets()
-
-        avoiding_time = time() - start - calc_time - setup_time - find_obs_list_time
-
-        if dodge_direction != 0:
-            self.set_speed([dodge_direction, 0])
+        if self.game.collides_with(point_left, 'obstacle'):
+            print('I am colliding on the left!')
 
 
     def obstacles_on_path(self, target):

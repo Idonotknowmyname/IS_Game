@@ -46,6 +46,7 @@ class ClusterController:
             bot.target = target
             if isinstance(target, np.ndarray):
                 bot.path_to_target = bot.pathfind(Point(target))
+                print('This bot is at {} and wants to go at {}'.format(bot.get_grid_node(bot.get_position()), bot.get_grid_node(target)))
             else:
                 bot.path_to_target = bot.pathfind(target)
         bot.current_state = "Go"
