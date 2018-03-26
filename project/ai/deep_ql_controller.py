@@ -6,6 +6,7 @@ from keras.models import Sequential
 from keras.layers import Dense, InputLayer
 
 from ..sprites.projectile import Projectile
+from ..sprites.point import Point
 
 from ..utils.utils import get_rot_mat
 
@@ -117,7 +118,28 @@ class DeepQLController(QLController):
 
             proj_dot = np.dot(proj_speed, dir_vec / np.linalg.norm(dir_vec))/2 + 0.5
 
-        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot])
+        # Get obstacles around
+        # Create a point in front, one on the right and one on the left
+
+        rel_pos_front = np.array([0, self.RADIUS * 4])
+        rel_pos_right = np.array([self.RADIUS * 4, 0])
+        rel_pos_left = np.array([-self.RADIUS * 4, 0])
+
+        all_pos = np.vstack([rel_pos_front, rel_pos_right, rel_pos_left])
+
+        rel_rot_pos = np.asarray(all_pos * get_rot_mat(self.get_rotation()))
+
+        point_front = Point(self.get_position() + rel_rot_pos[0, :])
+        point_right = Point(self.get_position() + rel_rot_pos[1, :])
+        point_left = Point(self.get_position() + rel_rot_pos[2, :])
+
+        obs_front = 1 if self.game.collides_with(point_front, 'obstacle') else 0
+
+        obs_right = 1 if self.game.collides_with(point_right, 'obstacle') else 0
+
+        obs_left = 1 if self.game.collides_with(point_left, 'obstacle') else 0
+
+        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot, obs_front, obs_right, obs_left])
 
         return state
 

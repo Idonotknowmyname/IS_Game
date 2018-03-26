@@ -15,6 +15,8 @@ class ClusterCoordinator(ClusterController):
         team_locations = [bot.get_position() for bot in self.team_bots]
         self.team_centroid = reduce(lambda x, y: x + y, team_locations) / len(team_locations)
 
+        print([x.current_state for x in self.team_bots])
+
         for bot in self.team_bots:
 
             visible_opponents = self.sees_enemy(bot)
@@ -28,10 +30,10 @@ class ClusterCoordinator(ClusterController):
 
                 goal = None
 
-                while goal is None or self.game.grid[bot.get_grid_node(goal)]:
+                while goal is None or not self.game.grid[bot.get_grid_node(goal)]:
                     rand_vec = np.random.rand(2) * 2 - 1
-                    rand_vec = rand_vec / np.linalg.norm(rand_vec) * 80
+                    rand_vec = rand_vec / np.linalg.norm(rand_vec) * 300
                     goal = self.team_centroid + rand_vec
 
-                self.go_to(bot,goal)
+                self.go_to(bot, goal)
 

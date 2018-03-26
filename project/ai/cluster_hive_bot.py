@@ -45,12 +45,6 @@ class ClusterHiveBot(PathfindController):
 
         self.states[self.current_state]()
 
-        if not self.current_state == self.last_state:
-            pass
-            # print('State transition! From {} to {}'.format(self.last_state, self.current_state))
-
-        self.last_state = self.current_state
-
     def check_for_dodge(self):
 
         closest_bullet = self.get_closest_enemy_projectile()
@@ -87,7 +81,6 @@ class ClusterHiveBot(PathfindController):
         return False
 
     def go(self):
-
         # Now there's a point to go to for sure
         if self.path_to_target is not None and self.is_path_removable():
             self.path_to_target = None
