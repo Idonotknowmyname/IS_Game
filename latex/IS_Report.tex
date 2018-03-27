@@ -32,7 +32,24 @@
 	
 	
 	\section{Deep Q-Learning}
+	Based on Google's DeepMind paper on Deep Q-Learning with Atari games, we decided to try a similar approach to create another bot for our game. Q-Learning  is a model free, reinforcement learning technique to find the optimal policy $\pi^*$ that maximizes the sum of cumulative rewards obtained from the environment. The way this works is that the agent picks an action based on the value of the Q function (which approximates the sum of cumulative rewards) and the state in which the environment is $s_t$, then it performs this action on the environment and receives a reward $r_t$ and a new state $s_{t+1}$. Finally, the Q function is updated based on the tuple $(s_t,a_t,r_t,s_{t+1})$. With these definition, the sum of cumulative rewards is defined as: 
+	\begin{equation}
+	 \sum_{t=t_0}^\infty\gamma^t\cdot r_t   
+	\end{equation}
+	Where $\gamma$ is the discount factor for future rewards. The final optimal policy $\pi^*$ for choosing an action is then:
+	\begin{equation}
+	    \pi^*(s_t) = \argmax_{a'}Q^*(s_t,a')
+	\end{equation}
+	where
+	\begin{equation}
+	    Q^*(s_t,a) = r_t(s_t,a) + \lambda \cdot \max_{a'}Q^*(tr(s_t, a), a')
+	\end{equation}
+	In this last equation, $r_t(s_t,a)$ is the reward obtained executing action $a$ when in state $s_t$, and $tr(s_t, a)$ is the state obtained after executing action $a$ on state $s_t$. In order to learn the optimal Q function, a training step needs to be executed, where we update the Q function based on the obtained reward. That is:
 	
+	\begin{equation}
+	    Q(s_t, a) \leftarrow Q(s_t,a) + \alpha\cdot[r_t(s_t,a)+\lambda\cdot\max_{a'}Q(s_{t+1},a) - Q(s_t,a)]
+	\end{equation}
+	where $\alpha$ is the learning rate.
 	
 	
 	\section{Monte Carlo Tree-Search}
