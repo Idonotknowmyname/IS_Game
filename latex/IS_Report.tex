@@ -97,7 +97,12 @@
 	
 	
 	\section{Conclusion}
-	
+	Based on the results of our experiments, we could draw a few conclusions:
+	\begin{itemize}
+	    \item State-based performed surprisingly well, especially against human player. This could be extended to have a state-based team controller for each team, incorporating the discoveries from the single state-based agent and some multi-agent techniques. It would be interesting to compare these team coordination agents with the basic state-based one.
+	    \item Given the experiments with the Deep Q-Learning, we can conclude that a better state representation for the agent might be required, and a more sophisticated reward system could be implemented, in order to obtain some more improvements. Furthermore, a more complete parameter exploration could have improved the score as well.
+	    \item The choice of MCTS algorithm to build on top of the state-based agent was a very interesting strategy, which we unfortunately had to abandon due to the computational load it posed on the game engine. Given more time, we could have implemented a less detailed game engine simulator to speed up the computation and possibly obtain better results than the original state-based agent.
+	\end{itemize}
 	
 	
 \end{document}
