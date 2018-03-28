@@ -50,11 +50,36 @@
 	    Q^*(s_t,a) = r_t(s_t,a) + \lambda \cdot \max_{a'}Q^*(tr(s_t, a), a')
 	\end{equation}
 	In this last equation, $r_t(s_t,a)$ is the reward obtained executing action $a$ when in state $s_t$, and $tr(s_t, a)$ is the state obtained after executing action $a$ on state $s_t$. In order to learn the optimal Q function, a training step needs to be executed, where we update the Q function based on the obtained reward. That is:
-	
 	\begin{equation}
 	    Q(s_t, a) \leftarrow Q(s_t,a) + \alpha\cdot[r_t(s_t,a)+\lambda\cdot\max_{a'}Q(s_{t+1},a) - Q(s_t,a)]
 	\end{equation}
 	where $\alpha$ is the learning rate.
+	
+	In order to apply deep learning to classical Q learning, some changes need to be made to the algorithm. First, for the Q function (classically represented as a table with state, action pairs) a neural network is used. Then, a choice for a representation of the game state needs to be made. In the paper, DeepMind used a deep Convolutional Neural Network, which took the entire screen as input, and returned a Q-values vector with an entry for each possible action. In our experiment, however, we decided to go for a simpler model (Feed-forward Net) and a simpler state representation to test whether it was descriptive enough for our game. The network would receive at each time step a vector with information about:
+	\begin{itemize}
+	    \item The x position of the bot
+	    \item The y position of the bot
+	    \item The rotation of the bot
+	    \item The health of the bot
+	    \item The rotation the bot should match to face towards the closest enemy
+	    \item The distance from the closest enemy
+	    \item Boolean representing if the closest enemy is visible (no obstacles in the way)
+	    \item The x position of the closest enemy bullet (if any)
+	    \item The y position of the closest enemy bullet (if any)
+	    \item The dot product between bullet speed and vector between bullet and bot (if any)
+	    \item Boolean representing if there is an obstacle right in front
+	    \item Boolean representing if there is an obstacle on the right
+	    \item Boolean representing if there is an obstacle on the left
+	\end{itemize}
+	We normalized each of these values in the range $[0,1]$, and as result of the feed-forward pass we obtained the expected Q values for each action. The training step for such a network consists of an update of the network parameters by applying a gradient descent step, minimizing the following loss function at time step $t$:
+	\begin{equation}
+	    L(\theta_t) = [r_t+\lambda\cdot\max_{a'}Q(tr(a,s),a';\theta_t) - Q(a,s;\theta_t)]^2
+	\end{equation}
+	where $a$ is the chosen action at $t$.
+	
+	Another change to be made to the classical algorithm was the introduction of an episodic memory $D$ of fixed size. The motivation for this is that if we simply apply a network update on the results obtained at each step, subsequent gradients are going to be very similar (updating every 1/fps $\approx 0.16$ sec), preventing the network to well generalize the training. Therefore, at each update step, the transition tuple $(s_t,a,r_t,s_{t+1})$ is stored in the memory, then a random mini-batch of episodes is sampled from the memory (size of mini-batch was 32), and an update step is applied over the mini-batch.
+	
+	Unfortunately, however, the network was not able to learn in a reasonable amount of time (200 full games) starting from no training, in neither 1v1 (Deep QL against itself) nor 2v2 and 3v3 (one Deep QL on each team, and the rest chosen randomly among the State-Based and Pathfinder controllers). Finally, as last experiment, we tried to first pre-train the network by watching the State-Based controller play and simply trying to approximate its actions. This led to a better result than the previous: in this one the bot was able to better roam around the map, and it did give some responses when the enemy bot enter into sight (twitching, starting to shoot at a fixed point). However it was still not able to learn how to turn to face the opponent, even after Deep Q learning was applied to the pre-trained network.
 	
 	
 	\section{Monte Carlo Tree-Search}
