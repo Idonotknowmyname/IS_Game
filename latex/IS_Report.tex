@@ -25,10 +25,15 @@
 	
 	\section{Rule-Based Bots}
 	
-	
+	The first iteration of an agent in our game was a simple rule based bot that always faced towards the first opponent and fired when the opponent was visible. This then evolved into an early version of the state-based agent by implementing A* pathfinding. The bot moved towards the opponent if they were not visible and fired at them if they were. \\
+	When playing against humans, these bots were too rudimentary to be of challenge. Even though they didn't struggle with controls like humans sometimes do, they were not avoiding bullets or using strategies to approach the enemy. The bots also knew everything about the game world, which made boring game experience. In video games, bots typically know their immediate surroundings, not the entire world.
 	
 	\section{State-Based Bot}
-	
+	Improving on these ideas, we discretized the bots to 4 states: dodge, roam, shoot and search. Using simple rules for state changes and discrete states, we could improve the performance and game play experience. We also planned this as the training controller for learning bots, which we hoped to allow us to learn more complex behaviour than what we could implement with simple rules. \\
+	Dodge state was the most important change for this bot. It made the bot significantly more challenging to play against. We used simple vector algebra to determine whether the closest bullet was going to collide with the agent and to determine the best direction to dodge to. Bots prioritize survival by putting dodge above other states in importance. \\
+	Roam and search states were improvements on the omniscience of the bot. We decided to only give bot knowledge of the closest visible opponent. If it didn't know about any opponents, it simply roamed around to random locations on the map. After spotting and potentially losing sight of the enemy, the agent would go to the location where the enemy was last seen, before returning to roam. \\
+	Shoot state remained the same as with rule-based bot: Fire at enemy if they are visible. \\
+	Two important limitations of this bot were its lack of coordination with team-mates and its inability to multi-task (i.e. to be in multiple states at the same time). We planned on experimenting with rule-based team controllers,  which would be responsible of state-based agents' state changes, but our first priority was to create a bot that would learn on its own.
 	
 	
 	\section{Deep Q-Learning}
@@ -36,7 +41,10 @@
 	
 	
 	\section{Monte Carlo Tree-Search}
-	
+	One of our initial approaches on improving the state-based bot was implementing Monte Carlo Tree-Search (MCTS) in some of its states, namely the shoot and dodge states. The game as whole was too large to be efficiently simulated in real time. The timeframe for dodging or shooting to hit an enemy was always fairly small, which is why decided on splitting the game to subtasks. \\
+	Our approach here was to simulate only one or two seconds of the game and then evaluate the state based on if the agent had hit an enemy or gotten hit by one. We further attempted to optimize the simulations by making them run at larger time step than the game itself. It is not necessary to make a decision 60 times each second to achieve good game play against humans. \\
+	This approach was proven to be unsuccessful as a single simulation for a second long game took 0.07 seconds on average. This was too slow to run multiple simulations and make effective decisions and so MCTS approach was abandoned. \\
+	We briefly discussed making a more rough grained simulation of the game to speed up decision making, but it was not feasible to make another entire game engine for the scope of this project. This is something to look into however, if one would be interested in creating more efficient bots for this style of games.
 	
 	
 	\section{Conclusion}
