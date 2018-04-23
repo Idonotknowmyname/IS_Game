@@ -17,7 +17,7 @@ class TrainedDQLController(StateController):
     avail_actions = ['turn_left', 'turn_right', 'move_left', 'move_right', 'move_forw', 'move_back', 'shoot', 'still']
 
     # Variables given to the learner
-    state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_x', 'closest_enemy_y', 'is_closest_enemy_visible',
+    state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_direction', 'closest_enemy_dist', 'is_closest_enemy_visible',
                   'closest_proj_x', 'closest_proj_y', 'closest_proj_dot', 'obs_in_front', 'obs_on_right', 'obs_on_left']
 
 
@@ -43,9 +43,9 @@ class TrainedDQLController(StateController):
 
         model = Sequential()
         model.add(InputLayer((n_inputs,)))
-        model.add(Dense(20, activation='relu'))
-        model.add(Dense(20, activation='relu'))
-        model.add(Dense(20, activation='relu'))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(32, activation='tanh'))
         model.add(Dense(n_outputs, activation='linear'))
 
         model.compile(optimizer='Adam', loss='mse')
@@ -71,17 +71,27 @@ class TrainedDQLController(StateController):
         l_turn = 1 if self.get_ang_speed() == -1 else 0
         r_turn = 1 if self.get_ang_speed() == 1 else 0
 
-        l_move = 1 if self.get_speed()[0] < -0.3 else 0
-        r_move = 1 if self.get_speed()[0] >= 0.3 else 0
+        half = np.sqrt(2)
 
-        f_move = 1 if self.get_speed()[1] >= 0.3 else 0
-        b_move = 1 if self.get_speed()[1] < -0.3 else 0
+        l_move = 1 if self.get_speed()[0] < -half else 0
+        r_move = 1 if self.get_speed()[0] >= half else 0
+
+        f_move = 1 if self.get_speed()[1] >= half else 0
+        b_move = 1 if self.get_speed()[1] < -half else 0
 
         shoot = 1 if self.current_state == 'Shoot' else 0
 
-        still = 1 if l_move == r_move == f_move == b_move == 0 else 0
+        still = 1 if l_move == r_move == f_move == b_move == shoot == 0 else 0
 
-        return np.array([l_turn, r_turn, l_move, r_move, f_move, b_move, shoot, still])
+        actions = np.array([l_turn, r_turn, l_move, r_move, f_move, b_move, shoot, still])
+
+        # Choose a random action with value 1 and set it as active, set the rest to zero
+        rand_id = np.random.choice(np.arange(len(actions))[actions==1])
+
+        ret_actions = np.zeros(len(actions))
+        ret_actions[rand_id] = 1
+
+        return ret_actions
 
     def get_env_state(self):
         scr_height, scr_width = self.game.window_size
@@ -93,8 +103,12 @@ class TrainedDQLController(StateController):
         y = self.get_position()[1] / scr_height
         rot = self.get_rotation() / (2*np.pi)
         health = self.health / self.MAX_HEALTH
-        opp_x = opponent.get_position()[0] / scr_width
-        opp_y = opponent.get_position()[1] / scr_height
+
+        vect_dist = opponent.get_position() - self.get_position()
+        opp_dist = np.linalg.norm(vect_dist) / np.linalg.norm([scr_width, scr_height])
+        opp_dir = np.arctan2(vect_dist[1], vect_dist[0])
+        opp_dir = (-opp_dir + np.pi / 2) % (np.pi * 2) / (np.pi * 2)
+
         opp_visible = 1 if self.is_target_visible(opponent) else 0
         proj = self.get_closest_enemy_projectile()
 
@@ -134,7 +148,7 @@ class TrainedDQLController(StateController):
 
         obs_left = 1 if self.game.collides_with(point_left, 'obstacle') else 0
 
-        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot, obs_front, obs_right, obs_left])
+        state = np.array([x, y, rot, health, opp_dist, opp_dir, opp_visible, proj_x, proj_y, proj_dot, obs_front, obs_right, obs_left])
 
         return state
 

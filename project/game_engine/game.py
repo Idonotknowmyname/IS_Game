@@ -358,3 +358,11 @@ class Game:
 
     def is_game_over(self):
         return len(self.team_a) == 0 or len(self.team_b) == 0
+
+
+    def collides_with(self, obj, *type):
+        for elem in self.get_game_objects(*type):
+            if colliding(obj, elem):
+                return True
+
+        return False

@@ -79,7 +79,7 @@ physics_refresh_rate = 1.8/fps
 grid_path = 15
 
 # Number of agents per team
-n_agents = 3
+n_agents = [3,3]
 
 # Identify what agent in what team is controlled by keyboard
 controlled_agent = [1,0] #Team 1 (B), bot 0
@@ -95,7 +95,10 @@ controllers = {
     10 : ClusterHiveBot
 }
 
-insert_bots = []
+bot_1 = DeepQLController(None, None, model=load_model('deep_q_models/before_i_die_1.h5'))
+bot_2 = DeepQLController(None, None, model=load_model('deep_q_models/before_i_die_2.h5'))
+
+insert_bots = []#[(bot_1, 'a', 0), (bot_2, 'b', 0)]
 
 hive_mind = [(ClusterCoordinator, "a")]
 

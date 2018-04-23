@@ -139,14 +139,16 @@ if spectate:
 # Update timestep
 delta_t = 1/30
 
-episodes = 120
+episodes = 20
 
 # Max number of seconds an episode can last
 max_episode_length = 60
 
 bot_1 = TrainedDQLController(None, None)
+model_name_1 = 'for presentation_1'
 
 bot_2 = TrainedDQLController(None, None)
+model_name_2 = 'for presentation_2'
 
 insert_bots = [(bot_1, 'a', 0), (bot_2, 'b', 0)]
 
@@ -171,6 +173,9 @@ log_every_n_seconds = 10
 
 losses_bot_1 = []
 losses_bot_2 = []
+
+last_health_a = None
+last_health_b = None
 
 for i in range(episodes):
 
@@ -222,6 +227,14 @@ for i in range(episodes):
 
             last_iter_time = time()
 
+            if (last_health_a is not None and last_health_a == team_a_health) \
+                    and (last_health_b is not None and last_health_b == team_b_health):
+                # If the game got stuck
+                break
+
+            last_health_a = team_a_health
+            last_health_b = team_b_health
+
         if spectate:
             # Draw objects
             game_display.fill(background_col)
@@ -248,16 +261,16 @@ for i in range(episodes):
     print_with_time('Episode {} has ended! The first bot hit {} shots, the second bot hit {} shots'
                     .format(i, tot_shots_hit[bot_1.id], tot_shots_hit[bot_2.id]))
 
-bot_1.save_model('FFNN_on_sController_1(3 layers)')
-bot_2.save_model('FFNN_on_sController_2(3 layers)')
+bot_1.save_model(model_name_1)
+bot_2.save_model(model_name_2)
 
 
 plt.plot(losses_bot_1, label='Bot 1 training error')
 plt.figure()
 plt.plot(losses_bot_1, label='Bot 2 training error')
 
-np.save('deep_q_models/train_loss_bot_1', losses_bot_1)
-np.save('deep_q_models/train_loss_bot_2', losses_bot_2)
+np.save('deep_q_models/train_loss_bot_1_20', losses_bot_1)
+np.save('deep_q_models/train_loss_bot_2_20', losses_bot_2)
 
 plt.legend()
 plt.show()

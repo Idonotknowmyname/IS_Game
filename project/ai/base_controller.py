@@ -110,6 +110,11 @@ class BaseController(Bot):
 
     def get_closest_enemy_projectile(self):
         enemy_proj = [x for x in self.game.get_game_objects('projectile') if not x.team == self.team]
+        bullet_dirs = [np.asarray(x.get_speed() * get_rot_mat(x.get_rotation())).flatten() for x in enemy_proj]
+
+        enemy_proj = [enemy_proj[i] for i in range(len(enemy_proj))
+                      if np.dot(self.get_position() - enemy_proj[i].get_position(), bullet_dirs[i]) >= 0]
+
         if len(enemy_proj) == 0:
             return None
         elif len(enemy_proj) == 1:

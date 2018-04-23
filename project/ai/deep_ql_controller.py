@@ -16,7 +16,7 @@ class DeepQLController(QLController):
     avail_actions = ['turn_left', 'turn_right', 'move_left', 'move_right', 'move_forw', 'move_back', 'shoot', 'still']
 
     # Variables given to the learner
-    state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_x', 'closest_enemy_y', 'is_closest_enemy_visible',
+    state_vars = ['pos_x', 'pos_y', 'rot', 'health', 'closest_enemy_direction', 'closest_enemy_dist', 'is_closest_enemy_visible',
                   'closest_proj_x', 'closest_proj_y', 'closest_proj_dot', 'obs_in_front', 'obs_on_right', 'obs_on_left']
 
     def __init__(self, team, game, position=None, rotation=None, eps=0.1, lam=0.9, memory_size=3000, model=None):
@@ -98,8 +98,12 @@ class DeepQLController(QLController):
         y = self.get_position()[1] / scr_height
         rot = self.get_rotation() / (2*np.pi)
         health = self.health / self.MAX_HEALTH
-        opp_x = opponent.get_position()[0] / scr_width
-        opp_y = opponent.get_position()[1] / scr_height
+
+        vect_dist = opponent.get_position() - self.get_position()
+        opp_dist = np.linalg.norm(vect_dist) / np.linalg.norm([scr_width, scr_height])
+        opp_dir = np.arctan2(vect_dist[1], vect_dist[0])
+        opp_dir = (-opp_dir + np.pi / 2) % (np.pi * 2) / (np.pi * 2)
+
         opp_visible = 1 if self.is_target_visible(opponent) else 0
         proj = self.get_closest_enemy_projectile()
 
@@ -139,7 +143,7 @@ class DeepQLController(QLController):
 
         obs_left = 1 if self.game.collides_with(point_left, 'obstacle') else 0
 
-        state = np.array([x, y, rot, health, opp_x, opp_y, opp_visible, proj_x, proj_y, proj_dot, obs_front, obs_right, obs_left])
+        state = np.array([x, y, rot, health, opp_dist, opp_dir, opp_visible, proj_x, proj_y, proj_dot, obs_front, obs_right, obs_left])
 
         return state
 
